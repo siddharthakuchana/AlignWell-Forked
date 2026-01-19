@@ -11,33 +11,6 @@ app = FastAPI()
 def welcome():
     return {"Hello": "World"}
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    try:
-        while True:
-            data = await websocket.receive_text()
-
-            # JSON string -> dict
-            frame_data = json.loads(data)
-
-            # remove "data:image/jpeg;base64," header if present
-            b64_str = frame_data["image"]
-            if "," in b64_str:
-                b64_str = b64_str.split(",")[1]
-
-            # base64 -> bytes
-            img_data = base64.b64decode(b64_str)
-
-            # bytes -> numpy array
-            nparr = np.frombuffer(img_data, np.uint8)
-
-            # numpy array -> cv2 image
-            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-    except WebSocketDisconnect:
-        print("Client disconnected")
-
 
 # WebSocket route
 @app.websocket("/ws")
