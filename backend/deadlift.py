@@ -1,4 +1,4 @@
-from .angle_utils import calculate_angle
+from angle_utils import calculate_angle
 
 class DeadliftTracker:
     #constructor that gives the initial states, feedback and rep count initially set to 0

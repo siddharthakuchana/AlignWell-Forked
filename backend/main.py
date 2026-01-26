@@ -4,13 +4,12 @@ import numpy as np
 import base64
 import json
 import mediapipe as mp
-from .pushup import PushupTracker
+from pushup import PushupTracker
 
 app = FastAPI()
 
-# Global MediaPipe setup
+# MediaPipe Pose
 mp_pose = mp.solutions.pose
-
 pose_model = mp_pose.Pose(
     static_image_mode=False,
     model_complexity=1,
@@ -24,83 +23,91 @@ def welcome():
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    #accept the websocket connection
     await websocket.accept()
-    print("Client connected")
+    print("✅ Client connected")
 
-    #tracker is used to store the exercise session, inititally its None
     tracker = None
 
     try:
         while True:
-            #Recieves the data from the frontend
-            data = await websocket.recieve_text()
-            message = json.loads(data)
+            data = await websocket.receive_text()
+            print("📥 data received")
 
-            #handles if the exercise is in the message
-            if exercise in "message":
-                ex_type = message['exercise']
+            # ---------- TRY JSON ----------
+            try:
+                message = json.loads(data)
+                is_json = True
+            except:
+                is_json = False
+
+            # ---------- EXERCISE SELECT ----------
+            if is_json and "exercise" in message:
+                ex_type = message["exercise"]
+                print("🏋 Exercise:", ex_type)
+
                 if ex_type == "pushup":
                     tracker = PushupTracker()
-                    #send a message to frontend that the pushup counter has been started
-                    await websocket.send_text(json.dumps({"status": "ready", "message": "Pushup counter started"}))
+                    await websocket.send_text(json.dumps({
+                        "status": "ready",
+                        "message": "Pushup counter started"
+                    }))
                 else:
-                    await websocket.send_text(json.dumps({"status": "error", "message": f"Exercise '{ex_type}' not supported yet"}))
+                    await websocket.send_text(json.dumps({
+                        "status": "error",
+                        "message": "Exercise not supported"
+                    }))
                 continue
 
-            #checks if the tracker has the exercise selected, and if not responds to the use to select the exercise
+            # ---------- FRAME ----------
             if tracker is None:
-                await websocket.send_text(json.dumps({"status": "waiting", "message": "Please select an exercise first"}))
-                continue
-            
-            #check if the image frame is present
-            if "image" not in message:
+                await websocket.send_text(json.dumps({
+                    "status": "waiting",
+                    "message": "Select exercise first"
+                }))
                 continue
 
-            #decoding the image
-            base64 = message['image']
-            if "," in base64:
-                base64 = base64.split(",")[1]
+            frame_b64 = data
+            if "," in frame_b64:
+                frame_b64 = frame_b64.split(",")[1]
 
             try:
-                #Image first decoded from base64 and then converted to numpy array, then converted to opencv2 image to support mediapipe model
-                img_data = base64.b64decode(base64)
-                nparr = np.frombuffer(img_data, np.uint8)
+                img_bytes = base64.b64decode(frame_b64)
+                nparr = np.frombuffer(img_bytes, np.uint8)
                 frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
                 if frame is None:
                     continue
 
-                #the decoded frame is then passed to mediapipe model converted into RGB format
-                results = pose_model.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                results = pose_model.process(rgb)
 
-                #if landmarks are detected then pass them to the tracker
-                if result.pose_landmarks:
-                    #pass landmarks to the tracker using websocket 
+                print("🟢 pose detected:", results.pose_landmarks is not None)
 
-                    #these raw landmarks are taken and prepared to display on the frontend UI to draw
-                    landmarks_for_ui = [{"x": lm.x, "y": lm.y} for lm in results.pose_landmarks.landmark]
+                if results.pose_landmarks:
+                    landmarks_for_ui = [
+                        {"x": lm.x, "y": lm.y}
+                        for lm in results.pose_landmarks.landmark
+                    ]
 
-                    #get the response from the process function in pushup.py
                     response = tracker.process(results.pose_landmarks.landmark)
+                    response["landmarks"] = landmarks_for_ui
 
-                    #attach the landmarks to the response along with the already existing response
-                    response['landmarks'] = landmarks_for_ui
-
-                    #send the response to the frontend
                     await websocket.send_text(json.dumps(response))
+                    print("📤 sent landmarks")
 
                 else:
-                    await websocket.send_text(json.dumps({"msg": "No person detected"}))
+                    await websocket.send_text(json.dumps({
+                        "status": "nodetect",
+                        "message": "No person detected",
+                        "landmarks": []
+                    }))
 
             except Exception as e:
-                print(f"Frame processing error: {e}")
-                await websocket.send_text(json.dumps({"status": "error", "msg": "Frame processing failed"}))
+                print("❌ Frame error:", e)
+                await websocket.send_text(json.dumps({
+                    "status": "error",
+                    "message": "Frame processing failed"
+                }))
 
     except WebSocketDisconnect:
-        print("Client disconnected")
-    except Exception as e:
-        print(f"WebSocket error: {e}")
-
-
-
+        print("⚠ Client disconnected")
