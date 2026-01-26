@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Push Ups | AlignWell</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background: #222;
+            color: white;
+        }
+
+        .container {
+            width: 85%;
+            margin: auto;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .image-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .box {
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            padding: 15px;
+            width: 300px;
+        }
+
+        .box img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            margin: 10px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <script>
+        if (localStorage.getItem("isLoggedIn") !== "true") {
+            alert("You are not logged in. Please login first.");
+            localStorage.setItem("returnUrl", window.location.href);
+            window.location.href = "login.html";
+        }
+    </script>
+
+
+    <nav class="navbar">
+        <span>
+            AlignWell |
+            <a href="guide.html" style="color:white;">⬅ Back to Guide</a>
+        </span>
+
+        <span>
+            👤 <b id="user"></b>
+            <button onclick="logout()">Logout</button>
+        </span>
+    </nav>
+
+    <div class="container">
+
+        <h2>Push Ups Posture Guide</h2>
+
+        <!-- IMAGES -->
+        <div class="image-row">
+
+            <div class="box">
+                <h4> Correct Posture</h4>
+                <img src="pushup_correct.jpg" alt="Correct Pushup">
+                <p>Body straight, elbows at 45°</p>
+            </div>
+
+            <div class="box">
+                <h4> Incorrect Posture</h4>
+                <img src="pushup_wrong.jpg" alt="Wrong Pushup">
+                <p>Back bent, neck dropped</p>
+            </div>
+
+        </div>
+
+        <br>
+
+        <h3>Tips</h3>
+        <p> Keep core tight</p>
+        <p> Head aligned with spine</p>
+        <p> Full range of motion</p>
+
+        <br>
+
+        <!-- CAMERA BUTTON -->
+        <button onclick="goCamera()">Start Webcam</button>
+        <button disabled>Upload Video (Coming Soon)</button>
+
+    </div>
+
+    <script>
+        document.getElementById("user").innerText =
+            localStorage.getItem("username");
+
+        function goCamera() {
+            window.location.href = "camera.html";
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
+    </script>
+
+</body>
+
+</html>
+/*Images to keep in folder:
+pushup_correct.jpg pushup_wrong.jpg
+*/

@@ -1,55 +1,70 @@
-const socket = new WebSocket("ws://localhost:8000/ws");
+const socket = new WebSocket("ws://127.0.0.1:8000/ws");
 
-// holds the id by setInterval(), used later to stop the frame sending loop
-let streamInterval = null;
+// ========== CONNECTION EVENTS ==========
 
-// 2. When connection opens
 socket.onopen = () => {
-    console.log("Connected to WebSocket");
-    document.getElementById("output").innerText = "Connected to server";
-
-    //starts sending frames from an already running camera
-    if (videoStream) {
-        startStreaming();
-    }
+    console.log("✅ Connected to WebSocket");
+    const out = document.getElementById("output");
+    if (out) out.innerText = "Connected to server";
 };
 
-//starts streaming, takes the id set by setInterval()
-function startStreaming() {
-    isStreaming = true;
-    //runs the function repeatedly
-    streamInterval = setInterval(() => {
-        if (isStreaming && videoStream) {
-            //takes current video frame and converts to base64 form, frame is wrapped as a json and returned as a string
-            const frameData = captureFrame();
-            if (!frameData) return;
-            // sending the exercise type too
-            socket.send(JSON.stringify({
-                image: frameData
-            }));
-        }
-    }, 1000 / 24);// this is the frame rate/ fps control
-}
-
-function stopStreaming() {
-    isStreaming = false;
-    if (streamInterval) {
-        clearInterval(streamInterval);//clears the interval loop
-    }
-}
+socket.onerror = (e) => {
+    console.error("❌ WebSocket error", e);
+};
 
 socket.onclose = () => {
-    stopStreaming(); //when the socket is closed, the webcam is stopped
-}
-
-// 3. When message is received from server
-socket.onmessage = (event) => {
-    console.log("Message from server:", event.data);
-    document.getElementById("output").innerText = event.data;
+    console.log("⚠️ WebSocket closed");
 };
 
-// 4. Send message to server
-function sendMessage() {
-    socket.send("Hello from browser");
+// ========== EXERCISE SELECT ==========
+
+function selectExercise(type) {
+    socket.send(JSON.stringify({ exercise: type }));
+    const out = document.getElementById("output");
+    if (out) out.innerText = `Started ${type}`;
 }
 
+// ========== RECEIVE DATA FROM BACKEND ==========
+
+socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    console.log("DATA:", data);
+
+    // reps + feedback
+    if (data.reps !== undefined && data.feedback) {
+        document.getElementById("repText").innerText = `Reps: ${data.reps}`;
+        document.getElementById("formText").innerText = `Form: ${data.feedback.form}`;
+
+        const status = document.getElementById("statusText");
+        if (data.feedback.form.toLowerCase().includes("correct")) {
+            status.innerText = "Correct ✔";
+            status.style.color = "green";
+        } else {
+            status.innerText = "Incorrect ❌";
+            status.style.color = "red";
+        }
+    }
+
+    // landmarks
+    if (data.landmarks) {
+        drawSkeleton(data.landmarks);
+    }
+};
+
+// ========== DRAW LANDMARKS ==========
+
+function drawSkeleton(landmarks) {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#00ff00";
+
+    landmarks.forEach(lm => {
+        const x = lm.x * canvas.width;
+        const y = lm.y * canvas.height;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}

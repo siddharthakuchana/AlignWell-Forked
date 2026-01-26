@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard | AlignWell</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+    <script>
+        if (localStorage.getItem("isLoggedIn") !== "true") {
+            alert("You are not logged in. Please login first.");
+            localStorage.setItem("returnUrl", window.location.href);
+            window.location.href = "login.html";
+        }
+    </script>
+
+    <nav class="navbar">
+        <span>AlignWell</span>
+
+        <span>
+            <a href="detect.html">Features</a> |
+            <a href="guide.html">Guide</a> |
+            <a href="contributors.html">Creators</a>
+        </span>
+
+        <span>
+            👤 <b id="user"></b>
+            <button onclick="logout()">Logout</button>
+        </span>
+    </nav>
+
+    <h2>Posture Detection Dashboard</h2>
+    <p>Webcam & video upload will be added here.</p>
+
+    <script>
+        document.getElementById("user").innerText =
+            localStorage.getItem("username");
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
+    </script>
+
+</body>
+
+</html>

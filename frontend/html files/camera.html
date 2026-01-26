@@ -1,20 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Access</title>
-</head>
-<body>
-    <h2>Webcam feed</h2>
+    <title>AlignWell Tracker</title>
 
-    <video id="video" autoplay></video>
-    <button onclick="startCamera()">Start</button>
-    <button onclick="stopCamera()">Stop</button>
-    <div id="output"></div>
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background: #222;
+            color: white;
+        }
+
+        .main {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .video-box {
+            position: relative;
+        }
+
+        video {
+            width: 640px;
+            height: 480px;
+            border: 2px solid #333;
+            border-radius: 10px;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .feedback-box {
+            width: 280px;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .status {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Authentication CHECK -->
+    <script>
+        if (localStorage.getItem("isLoggedIn") !== "true") {
+            alert("You are not logged in.");
+            localStorage.setItem("returnUrl", window.location.href);
+            window.location.href = "login.html";
+        }
+    </script>
+
+    <nav class="navbar">
+        <span>AlignWell | <a href="pushups.html" style="color:white;">⬅ Back</a></span>
+        <span> <b id="user"></b> <button onclick="logout()">Logout</button></span>
+    </nav>
+
+    <h2 style="text-align:center;">Posture Tracker</h2>
+
+    <div class="main">
+
+        <div class="video-box">
+            <video id="video" autoplay></video>
+            <canvas id="canvas" width="640" height="480"></canvas>
+        </div>
+
+        <div class="feedback-box">
+            <h3>Exercise</h3>
+            <button onclick="selectExercise('pushup')">Pushups</button>
+            <button onclick="selectExercise('squat')">Squats (Soon)</button>
+
+            <hr>
+
+            <p id="repText">Reps: 0</p>
+            <p id="formText">Form: --</p>
+            <div id="statusText" class="status">Waiting...</div>
+
+            <div id="output">Select exercise</div>
+
+            <br>
+            <button onclick="startCamera()">Start</button>
+            <button onclick="stopCamera()">Stop</button>
+        </div>
+
+    </div>
 
     <script src="../scripts/camera.js"></script>
     <script src="../scripts/websocket.js"></script>
 
+    <script>
+        document.getElementById("user").innerText = localStorage.getItem("username");
+        function logout() {
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
+    </script>
+
 </body>
+
 </html>

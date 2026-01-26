@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login | AlignWell</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <h2>AlignWell</h2>
+    </nav>
+
+    <div class="main-container">
+
+        <h2>Login</h2>
+
+        <form onsubmit="loginRedirect(event)">
+            <input type="text" placeholder="Username" required><br><br>
+            <input type="password" placeholder="Password" required><br><br>
+            <button type="submit">Login</button>
+        </form>
+
+        <p>
+            Don’t have an account?
+            <a href="signup.html">Sign up</a>
+        </p>
+
+    </div>
+
+    <script>
+        function loginRedirect(event) {
+            event.preventDefault();
+
+            const username = document.querySelector('input[type="text"]').value;
+
+            localStorage.setItem("isLoggedIn", "true");
+            localStorage.setItem("username", username);
+
+            const returnUrl = localStorage.getItem("returnUrl");
+
+            if (returnUrl) {
+                localStorage.removeItem("returnUrl");
+                window.location.href = returnUrl;
+            } else {
+                window.location.href = "detect.html";
+            }
+        }
+    </script>
+
+</body>
+
+</html>
