@@ -21,8 +21,14 @@ async function startCamera() {
         captureCanvas.height = video.videoHeight;
     };
 
-    sendInterval = setInterval(sendFrame, 100); // ~10 fps
+    // ✅ resend exercise so backend resets tracker
+    if (window.selectedExercise) {
+        socket.send(JSON.stringify({ exercise: window.selectedExercise }));
+    }
+
+    sendInterval = setInterval(sendFrame, 100);
 }
+
 
 function stopCamera() {
     if (stream) {
