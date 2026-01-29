@@ -19,6 +19,10 @@ class SquatTracker:
         self.rep_valid = True
         self.hit_bottom = False
 
+        # Calibration / Stable start
+        self.is_calibrated = False
+        self.stable_frames = 0
+
     def process(self, landmarks):
         # Helper function to get landmark position and visibility
         def get_landmark(idx):
@@ -63,7 +67,13 @@ class SquatTracker:
             #if no side is visible, give the rep count as it is, and send a message to the frontend
             if not left_visible and not right_visible:
                 accuracy = (self.correct_reps / self.total_reps) * 100 if self.total_reps > 0 else 0
-                return {"msg": "Body not fully visible", "reps": self.correct_reps, "total_reps": self.total_reps, "accuracy": round(accuracy, 2)}
+                return {
+                    "msg": "Body not fully visible", 
+                    "reps": self.correct_reps, 
+                    "total_reps": self.total_reps, 
+                    "accuracy": round(accuracy, 2),
+                    "feedback": {"posture": "Body not visible"}
+                }
 
             #angles are calculated based on the visible side
             left_knee_angle = right_knee_angle = 0
@@ -95,13 +105,37 @@ class SquatTracker:
                 right_hip_angle = calculate_angle(right_shoulder, right_hip, right_knee)
                 left_hip_angle = right_hip_angle
 
-            # ---------------- Strict squat rules ----------------
+            # ---------------- Practical squat rules ----------------
+            avg_knee_angle = (left_knee_angle + right_knee_angle) / 2
+            
+            # ---------------- CALIBRATION ----------------
+            
+            # Calibration: Hold steady 'Up' position for ~2 seconds (20 frames)
+            if not self.is_calibrated:
+                is_ready_pos = avg_knee_angle >= 160 # Fully standing
+                
+                if is_ready_pos:
+                    self.stable_frames += 1
+                else:
+                    self.stable_frames = 0
 
-            # Squat depth: knee angle <= 100 means deep enough
-            is_down = left_knee_angle <= 100 and right_knee_angle <= 100
+                if self.stable_frames >= 20:
+                    self.is_calibrated = True
+                else:
+                    return {
+                        "reps": self.correct_reps,
+                        "total_reps": self.total_reps,
+                        "accuracy": round(self.accuracy, 2),
+                        "feedback": {"posture": f"Stand steady for {max(0, (20 - self.stable_frames)//10)}s..."},
+                        "msg": "Calibrating"
+                    }
 
-            # Standing up: knee angle >= 160 means fully extended
-            is_up = left_knee_angle >= 160 and right_knee_angle >= 160
+            # ---------------- POSITION CHECKS ----------------
+            # Squat depth (using average)
+            is_down = avg_knee_angle <= 120
+
+            # Standing up (using average)
+            is_up = avg_knee_angle >= 155
 
             # Posture check: keep chest up (hip angle should not collapse too much)
             posture_ok = left_hip_angle >= 50 and right_hip_angle >= 50
@@ -132,40 +166,30 @@ class SquatTracker:
             self.symmetry_feedback = "Balanced squat" if symmetry_ok else "Do not lean to one side"
             self.knee_cave_feedback = "Knees aligned" if knee_cave_ok else "Do not let knees cave in"
 
-            #machine state is set to down, then this is when the rep validation starts
+            #machine state logic
             if self.squat_state == "up":
-                if is_down:
+                if avg_knee_angle < 150: # Started squatting (partial attempt)
                     self.squat_state = "down"
-
-                    #new rep attempt started so reset the validation flags
                     self.rep_valid = True
                     self.hit_bottom = False
 
-                    #immediately validate this frame also
                     if not (posture_ok and symmetry_ok and knee_cave_ok):
                         self.rep_valid = False
 
-            #if the state is down, keep checking if the form is correct during the rep
             elif self.squat_state == "down":
-
-                #if bottom depth is reached, mark hit_bottom true
                 if is_down:
                     self.hit_bottom = True
 
-                #if form becomes wrong in any frame, mark rep as invalid
                 if not (posture_ok and symmetry_ok and knee_cave_ok):
                     self.rep_valid = False
 
-                #when state is back to up, it means the person completed the squat
                 if is_up:
                     self.squat_state = "up"
                     self.total_reps += 1
 
-                    #if the rep was valid throughout and bottom was reached, count it as correct rep
                     if self.hit_bottom and self.rep_valid:
                         self.correct_reps += 1
-
-                    #reset flags for next rep
+                    
                     self.hit_bottom = False
                     self.rep_valid = True
 
@@ -193,4 +217,10 @@ class SquatTracker:
 
         except Exception as e:
             accuracy = (self.correct_reps / self.total_reps) * 100 if self.total_reps > 0 else 0
-            return {"msg": f"Error: {str(e)}", "reps": self.correct_reps, "total_reps": self.total_reps, "accuracy": round(accuracy, 2)}
+            return {
+                "msg": f"Error: {str(e)}", 
+                "reps": self.correct_reps, 
+                "total_reps": self.total_reps, 
+                "accuracy": round(accuracy, 2),
+                "feedback": {"posture": "Processing error"}
+            }

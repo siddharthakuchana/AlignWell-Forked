@@ -73,30 +73,50 @@
     <h2 style="text-align:center;">Posture Tracker</h2>
 
     <div class="main">
-
         <div class="video-box">
             <video id="video" autoplay></video>
             <canvas id="canvas" width="640" height="480"></canvas>
         </div>
 
         <div class="feedback-box">
-            <h3>Exercise</h3>
-            <button onclick="selectExercise('pushup')">Pushups</button>
-            <button onclick="selectExercise('squat')">Squats (Soon)</button>
+            <h3>Exercise Control</h3>
+            <div style="margin-bottom: 15px;">
+                <button onclick="selectExercise('Pushup')">Pushups</button>
+                <button onclick="selectExercise('Squat')">Squats</button>
+                <button onclick="selectExercise('Bench-Press')">Bench Press</button>
+                <button onclick="selectExercise('Shoulder-Raise')">Shoulder Raise</button>
+                <button onclick="selectExercise('Crunches')">Crunches</button>
+                <button onclick="selectExercise('Deadlift')">Deadlift</button>
+                <button onclick="selectExercise('Bicep-Curl')">Bicep Curl</button>
+            </div>
+
+            <div id="output" style="color: #666; font-style: italic; margin-bottom: 10px;">Select exercise...</div>
 
             <hr>
 
-            <p id="repText">Reps: 0</p>
-            <p id="formText">Form: --</p>
-            <div id="statusText" class="status">Waiting...</div>
+            <div style="background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 10px;">
+                <p id="repText" style="font-size: 24px; font-weight: bold; margin: 5px 0;">Reps: 0</p>
+                <p id="accuracyText" style="font-size: 18px; color: #007bff; margin: 5px 0;">Accuracy: 0%</p>
+                <p id="formText" style="color: #555; margin: 5px 0;">Form: --</p>
+                <div id="statusText" class="status">Waiting...</div>
 
-            <div id="output">Select exercise</div>
+                <button onclick="resetStats()"
+                    style="margin-top: 10px; background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Reset
+                    Stats</button>
+            </div>
+
+            <div id="angleDisplay"
+                style="margin-top: 15px; font-family: monospace; font-size: 14px; color: #444; display: none;">
+                <p>--- Real-time Angles ---</p>
+                <div id="angleContent"></div>
+            </div>
 
             <br>
-            <button onclick="startCamera()">Start</button>
-            <button onclick="stopCamera()">Stop</button>
+            <button onclick="startCamera()"
+                style="background: #28a745; color: white; border: none; cursor: pointer;">Start Camera</button>
+            <button onclick="stopCamera()"
+                style="background: #dc3545; color: white; border: none; cursor: pointer;">Stop</button>
         </div>
-
     </div>
 
     <script src="../scripts/camera.js"></script>

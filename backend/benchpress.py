@@ -14,6 +14,10 @@ class BenchPressTracker:
         self.rep_valid = True
         self.hit_bottom = False
 
+        # Calibration / Stable start
+        self.is_calibrated = False
+        self.stable_frames = 0
+
     def process(self, landmarks):
         # Helper function to get landmark position and visibility
         def get_landmark(idx):
@@ -72,14 +76,58 @@ class BenchPressTracker:
             #if no side is visible, give the rep count as it is, and send a message to the frontend
             else:
                 accuracy = (self.correct_reps / self.total_reps) * 100 if self.total_reps > 0 else 0
-                return {"msg": "Upper body not fully visible", "reps": self.correct_reps, "total_reps": self.total_reps, "accuracy": round(accuracy, 2)}
+                return {
+                    "msg": "Upper body not fully visible", 
+                    "reps": self.correct_reps, 
+                    "total_reps": self.total_reps, 
+                    "accuracy": round(accuracy, 2),
+                    "feedback": {"form": "Body not visible"}
+                }
 
-            # Form Judging (strict thresholds)
+            # Form Judging (using average)
+            avg_elbow_angle = (left_elbow_angle + right_elbow_angle) / 2
+            
+            # ---------------- ORIENTATION & CALIBRATION ----------------
+            
+            # Orientation check: For Bench Press, user MUST be horizontal
+            is_horizontal = abs(left_shoulder[1] - left_hip[1]) < abs(left_shoulder[0] - left_hip[0])
+            
+            if not is_horizontal:
+                self.stable_frames = 0
+                return {
+                    "reps": self.correct_reps,
+                    "total_reps": self.total_reps,
+                    "accuracy": round(self.accuracy, 2),
+                    "feedback": {"form": "Please lay down for bench press"},
+                    "msg": "Waiting for proper orientation"
+                }
+
+            # Calibration: Hold steady 'Up' position for ~2 seconds (20 frames)
+            if not self.is_calibrated:
+                is_ready_pos = avg_elbow_angle >= 150 # Arms extended
+                
+                if is_ready_pos:
+                    self.stable_frames += 1
+                else:
+                    self.stable_frames = 0
+
+                if self.stable_frames >= 20:
+                    self.is_calibrated = True
+                else:
+                    return {
+                        "reps": self.correct_reps,
+                        "total_reps": self.total_reps,
+                        "accuracy": round(self.accuracy, 2),
+                        "feedback": {"form": f"Hold arms steady for {max(0, (20 - self.stable_frames)//10)}s..."},
+                        "msg": "Calibrating"
+                    }
+
+            # ---------------- POSITION CHECKS ----------------
             # Up: Arms extended (lockout)
-            is_up = left_elbow_angle >= 170 and right_elbow_angle >= 170
+            is_up = avg_elbow_angle >= 155
 
             # Down: Arms bent (bar near chest)
-            is_down = left_elbow_angle <= 100 and right_elbow_angle <= 100
+            is_down = avg_elbow_angle <= 110
 
             # Extra strict check: too deep (elbow too closed)
             too_deep = left_elbow_angle < 60 or right_elbow_angle < 60
@@ -97,44 +145,30 @@ class BenchPressTracker:
             else:
                 self.form_feedback = "Good form"
 
-            #machine state is set to down, then this is when the rep validation starts
+            #machine state logic
             if self.bench_state == "up":
-                if is_down:
+                if avg_elbow_angle < 150: # Started pressing (partial attempt)
                     self.bench_state = "down"
-
-                    #new rep attempt started so reset the validation flags
                     self.rep_valid = True
                     self.hit_bottom = False
 
-                    #mark bottom only when proper down depth is reached
-                    if is_down:
-                        self.hit_bottom = True
-
-                    #if too deep, mark rep invalid
                     if too_deep:
                         self.rep_valid = False
 
-            #if the state is down, keep checking if the form is correct during the rep
             elif self.bench_state == "down":
-
-                #if bottom depth is reached, mark hit_bottom true
                 if is_down:
                     self.hit_bottom = True
 
-                #if bar goes too deep, mark rep invalid
                 if too_deep:
                     self.rep_valid = False
 
-                #when state is back to up, it means the person completed the bench press rep
                 if is_up:
                     self.bench_state = "up"
                     self.total_reps += 1
 
-                    #if the rep was valid throughout and bottom was reached, count it as correct rep
                     if self.hit_bottom and self.rep_valid:
                         self.correct_reps += 1
-
-                    #reset flags for next rep
+                    
                     self.hit_bottom = False
                     self.rep_valid = True
 
@@ -158,4 +192,10 @@ class BenchPressTracker:
 
         except Exception as e:
             accuracy = (self.correct_reps / self.total_reps) * 100 if self.total_reps > 0 else 0
-            return {"msg": f"Error: {str(e)}", "reps": self.correct_reps, "total_reps": self.total_reps, "accuracy": round(accuracy, 2)}
+            return {
+                "msg": f"Error: {str(e)}", 
+                "reps": self.correct_reps, 
+                "total_reps": self.total_reps, 
+                "accuracy": round(accuracy, 2),
+                "feedback": {"form": "Processing error"}
+            }
