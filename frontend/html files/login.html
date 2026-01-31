@@ -3,49 +3,79 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Login | AlignWell</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
 </head>
 
 <body>
 
-    <nav class="navbar">
-        <h2>AlignWell</h2>
-    </nav>
+    <div id="page">
 
-    <div class="main-container">
+        <div id="login-container">
 
-        <h2>Login</h2>
+            <div id="login-header">
+                <h2>Login</h2>
+            </div>
 
-        <form onsubmit="loginRedirect(event)">
-            <input type="text" placeholder="Username" required><br><br>
-            <input type="password" placeholder="Password" required><br><br>
-            <button type="submit">Login</button>
-        </form>
+            <div id="login-form">
+                <form method="post" action="/login">
 
-        <p>
-            Don’t have an account?
-            <a href="signup.html">Sign up</a>
-        </p>
+                    <div class="form-group">
+                        <label for="email">Email</label><br>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <br>
+
+                    <div class="form-group">
+                        <label for="password">Password</label><br>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="password" id="password" name="password" required style="flex: 1;">
+                            <button type="button" onclick="togglePasswordVisibility('password')"
+                                style="padding: 5px 10px; background-color: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                Show
+                            </button>
+                        </div>
+                    </div>
+
+                    <br>
+
+                    <div class="form-group">
+                        <button type="submit">Login</button>
+                    </div>
+
+                </form>
+            </div>
+
+            <div id="login-footer">
+                <p>
+                    Don't have an account?
+                    <a href="/register">Register</a>
+                </p>
+            </div>
+
+            <!--
+        the error is the value taken from backend if login unsuccessful
+        -->
+            {% if error %}
+            <div id="error-message">
+                <p>{{ error }}</p>
+            </div>
+            {% endif %}
+
+        </div>
 
     </div>
 
     <script>
-        function loginRedirect(event) {
-            event.preventDefault();
-
-            const username = document.querySelector('input[type="text"]').value;
-
-            localStorage.setItem("isLoggedIn", "true");
-            localStorage.setItem("username", username);
-
-            const returnUrl = localStorage.getItem("returnUrl");
-
-            if (returnUrl) {
-                localStorage.removeItem("returnUrl");
-                window.location.href = returnUrl;
+        function togglePasswordVisibility(fieldId) {
+            const field = document.getElementById(fieldId);
+            const button = event.target;
+            if (field.type === 'password') {
+                field.type = 'text';
+                button.textContent = 'Hide';
             } else {
-                window.location.href = "detect.html";
+                field.type = 'password';
+                button.textContent = 'Show';
             }
         }
     </script>
