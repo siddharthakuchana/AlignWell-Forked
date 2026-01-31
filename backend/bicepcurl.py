@@ -1,4 +1,4 @@
-from angle_utils import calculate_angle
+from angle_utils import calculate_angle, EMAFilter
 
 class BicepCurlTracker:
     #constructor that gives the initial states, feedback and rep count initially set to 0
@@ -17,6 +17,10 @@ class BicepCurlTracker:
         # Calibration / Stable start
         self.is_calibrated = False
         self.stable_frames = 0
+        
+        # Filters for smoothing (EMA alpha=0.3)
+        self.l_elbow_filter = EMAFilter(alpha=0.3)
+        self.r_elbow_filter = EMAFilter(alpha=0.3)
 
     def process(self, landmarks):
         # Helper function to get landmark position and visibility
@@ -84,7 +88,9 @@ class BicepCurlTracker:
                     "feedback": {"form": "Body not visible"}
                 }
 
-            # Form Judging (using average)
+            # Apply Smoothing
+            left_elbow_angle = self.l_elbow_filter.apply(left_elbow_angle)
+            right_elbow_angle = self.r_elbow_filter.apply(right_elbow_angle)
             avg_elbow_angle = (left_elbow_angle + right_elbow_angle) / 2
 
             # ---------------- CALIBRATION ----------------
@@ -110,11 +116,12 @@ class BicepCurlTracker:
                     }
 
             # ---------------- POSITION CHECKS ----------------
-            # Down: arms extended (full stretch)
-            is_down = avg_elbow_angle >= 150
-
-            # Up: arms curled (full squeeze)
-            is_up = avg_elbow_angle <= 80
+            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
+            is_up = avg_elbow_angle <= 120   # Relaxed from 70/80
+            is_down = avg_elbow_angle >= 140 # Relaxed from 150/160
+            
+            # Form check for Correct Reps (Keep strict for accuracy)
+            is_up_strict = avg_elbow_angle <= 75
 
             # Extra strict check: do not over-curl too much (noise / wrong detection)
             too_high = left_elbow_angle < 35 or right_elbow_angle < 35
@@ -134,16 +141,14 @@ class BicepCurlTracker:
 
             #machine state logic
             if self.curl_state == "down":
-                if avg_elbow_angle < 135: # Started curling (partial attempt)
+                # Start moving up (with buffer)
+                if avg_elbow_angle < 140:
                     self.curl_state = "up"
                     self.rep_valid = True
-                    self.hit_top = False # Haven't hit peak yet
-
-                    if too_high:
-                        self.rep_valid = False
+                    self.hit_top = False
 
             elif self.curl_state == "up":
-                if is_up:
+                if is_up_strict:
                     self.hit_top = True
 
                 if too_high:
@@ -151,8 +156,9 @@ class BicepCurlTracker:
 
                 if is_down:
                     self.curl_state = "down"
-                    self.total_reps += 1
+                    self.total_reps += 1 # Always count the attempt
 
+                    # Only count as correct if strict squeeze and control were met
                     if self.hit_top and self.rep_valid:
                         self.correct_reps += 1
                     

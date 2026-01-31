@@ -15,3 +15,19 @@ def calculate_angle(a, b, c):
         angle = 360 - angle
 
     return angle
+
+class EMAFilter:
+    """Exponential Moving Average Filter for smoothing jittery signals."""
+    def __init__(self, alpha=0.3):
+        self.alpha = alpha
+        self.smoothed_value = None
+
+    def apply(self, value):
+        if self.smoothed_value is None:
+            self.smoothed_value = value
+        else:
+            self.smoothed_value = (self.alpha * value) + (1 - self.alpha) * self.smoothed_value
+        return self.smoothed_value
+
+    def reset(self):
+        self.smoothed_value = None

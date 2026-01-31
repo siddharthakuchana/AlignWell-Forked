@@ -1,4 +1,4 @@
-from angle_utils import calculate_angle
+from angle_utils import calculate_angle, EMAFilter
 
 class BenchPressTracker:
     #constructor that gives the initial states, feedback and rep count initially set to 0
@@ -17,6 +17,10 @@ class BenchPressTracker:
         # Calibration / Stable start
         self.is_calibrated = False
         self.stable_frames = 0
+        
+        # Filters for smoothing (EMA alpha=0.3)
+        self.l_elbow_filter = EMAFilter(alpha=0.3)
+        self.r_elbow_filter = EMAFilter(alpha=0.3)
 
     def process(self, landmarks):
         # Helper function to get landmark position and visibility
@@ -84,7 +88,9 @@ class BenchPressTracker:
                     "feedback": {"form": "Body not visible"}
                 }
 
-            # Form Judging (using average)
+            # Apply Smoothing
+            left_elbow_angle = self.l_elbow_filter.apply(left_elbow_angle)
+            right_elbow_angle = self.r_elbow_filter.apply(right_elbow_angle)
             avg_elbow_angle = (left_elbow_angle + right_elbow_angle) / 2
             
             # ---------------- ORIENTATION & CALIBRATION ----------------
@@ -123,11 +129,12 @@ class BenchPressTracker:
                     }
 
             # ---------------- POSITION CHECKS ----------------
-            # Up: Arms extended (lockout)
-            is_up = avg_elbow_angle >= 155
+            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
+            is_down = avg_elbow_angle <= 130 # Relaxed from 100/110
+            is_up = avg_elbow_angle >= 145   # Relaxed from 160
 
-            # Down: Arms bent (bar near chest)
-            is_down = avg_elbow_angle <= 110
+            # Form check for Correct Reps (Keep strict for accuracy)
+            is_down_strict = avg_elbow_angle <= 100
 
             # Extra strict check: too deep (elbow too closed)
             too_deep = left_elbow_angle < 60 or right_elbow_angle < 60
@@ -147,25 +154,25 @@ class BenchPressTracker:
 
             #machine state logic
             if self.bench_state == "up":
-                if avg_elbow_angle < 150: # Started pressing (partial attempt)
+                # Start moving down (with buffer)
+                if avg_elbow_angle < 145: 
                     self.bench_state = "down"
                     self.rep_valid = True
                     self.hit_bottom = False
 
-                    if too_deep:
-                        self.rep_valid = False
-
             elif self.bench_state == "down":
-                if is_down:
+                if is_down_strict:
                     self.hit_bottom = True
 
+                # Record failures mid-rep
                 if too_deep:
                     self.rep_valid = False
 
                 if is_up:
                     self.bench_state = "up"
-                    self.total_reps += 1
+                    self.total_reps += 1 # Always count the attempt
 
+                    # Only count as correct if strict depth and form were met
                     if self.hit_bottom and self.rep_valid:
                         self.correct_reps += 1
                     

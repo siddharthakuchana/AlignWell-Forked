@@ -1,4 +1,4 @@
-from angle_utils import calculate_angle
+from angle_utils import calculate_angle, EMAFilter
 
 class ShoulderRaiseTracker:
     #constructor that gives the initial states, feedback and rep count initially set to 0
@@ -10,9 +10,12 @@ class ShoulderRaiseTracker:
         self.form_feedback = ""
         self.height_feedback = ""
 
-        #these variables are used to validate a rep properly (to calculate accuracy)
         self.rep_valid = True
         self.hit_top = False
+        
+        # Filters for smoothing (EMA alpha=0.3)
+        self.l_sh_filter = EMAFilter(alpha=0.3)
+        self.r_sh_filter = EMAFilter(alpha=0.3)
 
     def process(self, landmarks):
         # Helper function to get landmark position and visibility
@@ -74,16 +77,20 @@ class ShoulderRaiseTracker:
                 right_sh_angle = left_sh_angle = calculate_angle(right_hip, right_shoulder, right_elbow)
 
             #if no side is visible, give the rep count as it is, and send a message to the frontend
-            else:
+            if not left_visible and not right_visible:
                 accuracy = (self.correct_reps / self.total_reps) * 100 if self.total_reps > 0 else 0
                 return {"msg": "Upper body not fully visible", "reps": self.correct_reps, "total_reps": self.total_reps, "accuracy": round(accuracy, 2)}
 
-            # Form Judging (strict thresholds)
-            # Down: Arms at sides (< 25 degrees)
-            is_down = left_sh_angle <= 25 and right_sh_angle <= 25
+            # Apply Smoothing
+            left_sh_angle = self.l_sh_filter.apply(left_sh_angle)
+            right_sh_angle = self.r_sh_filter.apply(right_sh_angle)
 
-            # Up: Arms at shoulder height (~90 degrees)
-            is_up = left_sh_angle >= 80 and right_sh_angle >= 80
+            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
+            is_down = left_sh_angle <= 35 and right_sh_angle <= 35 # Relaxed from 25
+            is_up = left_sh_angle >= 60 and right_sh_angle >= 60   # Relaxed from 80
+            
+            # Form check for Correct Reps (Keep strict)
+            is_up_strict = left_sh_angle >= 80 and right_sh_angle >= 80
 
             # Extra strict check: going too high (trap engagement / cheating)
             too_high = left_sh_angle > 120 or right_sh_angle > 120
@@ -122,7 +129,7 @@ class ShoulderRaiseTracker:
             elif self.raise_state == "up":
 
                 #if top position is reached, mark hit_top true
-                if is_up:
+                if is_up_strict:
                     self.hit_top = True
 
                 #if raise goes too high, mark rep invalid
@@ -132,7 +139,7 @@ class ShoulderRaiseTracker:
                 #when state is back to down, it means the person completed the shoulder raise rep
                 if is_down:
                     self.raise_state = "down"
-                    self.total_reps += 1
+                    self.total_reps += 1 # Always count the attempt
 
                     #if the rep was valid throughout and top was reached, count it as correct rep
                     if self.hit_top and self.rep_valid:

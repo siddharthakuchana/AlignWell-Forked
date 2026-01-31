@@ -1,4 +1,4 @@
-from angle_utils import calculate_angle
+from angle_utils import calculate_angle, EMAFilter
 
 class CrunchesTracker:
     #constructor that gives the initial states, feedback and rep count initially set to 0
@@ -10,9 +10,14 @@ class CrunchesTracker:
         self.form_feedback = ""
         self.knee_feedback = ""
 
-        #these variables are used to validate a rep properly (to calculate accuracy)
         self.rep_valid = True
         self.hit_top = False
+        
+        # Filters for smoothing (EMA alpha=0.3)
+        self.l_hip_filter = EMAFilter(alpha=0.3)
+        self.r_hip_filter = EMAFilter(alpha=0.3)
+        self.l_knee_filter = EMAFilter(alpha=0.3)
+        self.r_knee_filter = EMAFilter(alpha=0.3)
 
     def process(self, landmarks):
         # Helper function to get landmark position and visibility
@@ -91,6 +96,12 @@ class CrunchesTracker:
                 if v8 > 0.6:
                     right_knee_angle = left_knee_angle = calculate_angle(right_hip, right_knee, right_ankle)
 
+            # Apply Smoothing
+            left_hip_angle = self.l_hip_filter.apply(left_hip_angle)
+            right_hip_angle = self.r_hip_filter.apply(right_hip_angle)
+            left_knee_angle = self.l_knee_filter.apply(left_knee_angle)
+            right_knee_angle = self.r_knee_filter.apply(right_knee_angle)
+
             # Crunches Logic:
             # Hip angle reduces when crunching up (shoulders move towards knees)
             avg_hip_angle = (left_hip_angle + right_hip_angle) / 2
@@ -99,9 +110,12 @@ class CrunchesTracker:
             # knee should stay bent, so knee angle should not become too straight
             avg_knee_angle = (left_knee_angle + right_knee_angle) / 2
 
-            # Strict thresholds (you can tune later)
-            is_up = avg_hip_angle <= 100
-            is_down = avg_hip_angle >= 130
+            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
+            is_up = avg_hip_angle <= 120   # Relaxed from 100
+            is_down = avg_hip_angle >= 130  # Keep as is, or slightly relaxed
+            
+            # Form check for Correct Reps (Keep strict)
+            is_up_strict = avg_hip_angle <= 95
 
             # Extra strict check: too much movement / wrong detection
             too_high = avg_hip_angle < 60
@@ -155,7 +169,7 @@ class CrunchesTracker:
             elif self.crunch_state == "up":
 
                 #if top position is reached, mark hit_top true
-                if is_up:
+                if is_up_strict:
                     self.hit_top = True
 
                 #if crunch goes too high, mark rep invalid
@@ -169,7 +183,7 @@ class CrunchesTracker:
                 #when state is back to down, it means the person completed the crunch rep
                 if is_down:
                     self.crunch_state = "down"
-                    self.total_reps += 1
+                    self.total_reps += 1 # Always count the attempt
 
                     #if the rep was valid throughout and top was reached, count it as correct rep
                     if self.hit_top and self.rep_valid:

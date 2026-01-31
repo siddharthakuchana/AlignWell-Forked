@@ -1,4 +1,4 @@
-from angle_utils import calculate_angle
+from angle_utils import calculate_angle, EMAFilter
 
 class SquatTracker:
     #constructor that gives the initial states, feedback and rep count initially set to 0
@@ -22,6 +22,12 @@ class SquatTracker:
         # Calibration / Stable start
         self.is_calibrated = False
         self.stable_frames = 0
+        
+        # Filters for smoothing (EMA alpha=0.3)
+        self.l_knee_filter = EMAFilter(alpha=0.3)
+        self.r_knee_filter = EMAFilter(alpha=0.3)
+        self.l_hip_filter = EMAFilter(alpha=0.3)
+        self.r_hip_filter = EMAFilter(alpha=0.3)
 
     def process(self, landmarks):
         # Helper function to get landmark position and visibility
@@ -105,6 +111,12 @@ class SquatTracker:
                 right_hip_angle = calculate_angle(right_shoulder, right_hip, right_knee)
                 left_hip_angle = right_hip_angle
 
+            # Apply Smoothing
+            left_knee_angle = self.l_knee_filter.apply(left_knee_angle)
+            right_knee_angle = self.r_knee_filter.apply(right_knee_angle)
+            left_hip_angle = self.l_hip_filter.apply(left_hip_angle)
+            right_hip_angle = self.r_hip_filter.apply(right_hip_angle)
+
             # ---------------- Practical squat rules ----------------
             avg_knee_angle = (left_knee_angle + right_knee_angle) / 2
             
@@ -131,17 +143,17 @@ class SquatTracker:
                     }
 
             # ---------------- POSITION CHECKS ----------------
-            # Squat depth (using average)
-            is_down = avg_knee_angle <= 120
+            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
+            is_down = avg_knee_angle <= 150 # Relaxed from 110/120
+            is_up = avg_knee_angle >= 155   # Relaxed from 165
 
-            # Standing up (using average)
-            is_up = avg_knee_angle >= 155
+            # Form check for Correct Reps (Keep strict for accuracy)
+            is_down_strict = avg_knee_angle <= 110
 
-            # Posture check: keep chest up (hip angle should not collapse too much)
-            posture_ok = left_hip_angle >= 50 and right_hip_angle >= 50
+            # Posture check: keep chest up
+            posture_ok = left_hip_angle >= 60 and right_hip_angle >= 60
 
-            # Symmetry check: both legs should squat similarly
-            # if difference is too much, user is leaning / shifting weight to one side
+            # Symmetry check
             symmetry_ok = abs(left_knee_angle - right_knee_angle) <= 15
 
             # Knee cave check (valgus): knee should not go too inward compared to ankle
@@ -168,25 +180,25 @@ class SquatTracker:
 
             #machine state logic
             if self.squat_state == "up":
-                if avg_knee_angle < 150: # Started squatting (partial attempt)
+                # Start moving down (with buffer)
+                if avg_knee_angle < 155:
                     self.squat_state = "down"
                     self.rep_valid = True
                     self.hit_bottom = False
 
-                    if not (posture_ok and symmetry_ok and knee_cave_ok):
-                        self.rep_valid = False
-
             elif self.squat_state == "down":
-                if is_down:
+                if is_down_strict:
                     self.hit_bottom = True
 
+                # Record failures if form breaks mid-rep
                 if not (posture_ok and symmetry_ok and knee_cave_ok):
                     self.rep_valid = False
 
                 if is_up:
                     self.squat_state = "up"
-                    self.total_reps += 1
+                    self.total_reps += 1 # Always count the attempt
 
+                    # Only count as correct if strict depth and form were met
                     if self.hit_bottom and self.rep_valid:
                         self.correct_reps += 1
                     

@@ -1,4 +1,4 @@
-from angle_utils import calculate_angle
+from angle_utils import calculate_angle, EMAFilter
 
 class DeadliftTracker:
     #constructor that gives the initial states, feedback and rep count initially set to 0
@@ -15,9 +15,13 @@ class DeadliftTracker:
         self.symmetry_feedback = ""
         self.hip_hinge_feedback = ""
 
-        #these variables are used to validate a rep properly (to calculate accuracy)
-        self.rep_valid = True
         self.hit_top = False
+        
+        # Filters for smoothing (EMA alpha=0.3)
+        self.l_hip_filter = EMAFilter(alpha=0.3)
+        self.r_hip_filter = EMAFilter(alpha=0.3)
+        self.l_knee_filter = EMAFilter(alpha=0.3)
+        self.r_knee_filter = EMAFilter(alpha=0.3)
 
     def process(self, landmarks):
         # Helper function to get landmark position and visibility
@@ -89,14 +93,22 @@ class DeadliftTracker:
                 right_hip_angle = left_hip_angle = calculate_angle(right_shoulder, right_hip, right_knee)
                 right_knee_angle = left_knee_angle = calculate_angle(right_hip, right_knee, right_ankle)
 
+            # Apply Smoothing
+            left_hip_angle = self.l_hip_filter.apply(left_hip_angle)
+            right_hip_angle = self.r_hip_filter.apply(right_hip_angle)
+            left_knee_angle = self.l_knee_filter.apply(left_knee_angle)
+            right_knee_angle = self.r_knee_filter.apply(right_knee_angle)
+
             # ---------------- Strict deadlift rules ----------------
+            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
+            is_up = (left_hip_angle >= 155 and right_hip_angle >= 155 and
+                     left_knee_angle >= 155 and right_knee_angle >= 155)
+            # Relaxed hinge detection for completing the rep
+            is_down = left_hip_angle <= 150 and right_hip_angle <= 150
 
-            # Up position: Hips extended, knees extended
-            is_up = (left_hip_angle >= 165 and right_hip_angle >= 165 and
-                     left_knee_angle >= 165 and right_knee_angle >= 165)
-
-            # Down position: hip hinge (hip angle smaller)
-            is_down = left_hip_angle <= 140 and right_hip_angle <= 140
+            # Form check for Correct Reps (Keep strict for accuracy)
+            is_up_strict = (left_hip_angle >= 170 and right_hip_angle >= 170 and 
+                            left_knee_angle >= 170 and right_knee_angle >= 170)
 
             # Hip hinge rule: user must actually hinge, not just bend knees
             hip_hinge_ok = left_hip_angle <= 150 and right_hip_angle <= 150
@@ -126,27 +138,17 @@ class DeadliftTracker:
             self.posture_feedback = "Keep back straight"
 
             #machine state is set to up, then this is when the rep validation starts
+            #machine state is set to up, then this is when the rep validation starts
             if self.deadlift_state == "down":
-                if is_up:
+                # Start moving up (with buffer)
+                if left_hip_angle > 150 and right_hip_angle > 150:
                     self.deadlift_state = "up"
-
-                    #new rep attempt started so reset the validation flags
                     self.rep_valid = True
                     self.hit_top = False
 
-                    #mark top only when proper up position is reached
-                    if is_up:
-                        self.hit_top = True
-
-                    #validate this frame
-                    if not (hip_hinge_ok and knees_ok and symmetry_ok):
-                        self.rep_valid = False
-
             #if the state is up, keep checking if the form is correct during the rep
             elif self.deadlift_state == "up":
-
-                #if top position is reached, mark hit_top true
-                if is_up:
+                if is_up_strict:
                     self.hit_top = True
 
                 #if form becomes wrong in any frame, mark rep invalid
@@ -156,13 +158,12 @@ class DeadliftTracker:
                 #when state is back to down, it means the person completed the deadlift rep
                 if is_down:
                     self.deadlift_state = "down"
-                    self.total_reps += 1
+                    self.total_reps += 1 # Always count the attempt
 
-                    #if the rep was valid throughout and top was reached, count it as correct rep
+                    # Only count as correct if strict lockout and hinge were met
                     if self.hit_top and self.rep_valid:
                         self.correct_reps += 1
 
-                    #reset flags for next rep
                     self.hit_top = False
                     self.rep_valid = True
 

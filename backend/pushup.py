@@ -1,4 +1,4 @@
-from angle_utils import calculate_angle
+from angle_utils import calculate_angle, EMAFilter
 
 class PushupTracker:
     #constructor that gives the initial states, feedback and rep count initially set to 0
@@ -13,11 +13,13 @@ class PushupTracker:
 
         #these variables are used to validate a rep properly (to calculate accuracy)
         self.rep_valid = True
-        self.hit_bottom = False
-        
-        #makes sure the frames are stable before starting the exercise
-        self.is_calibrated = False
         self.stable_frames = 0
+        
+        # Filters for smoothing (EMA alpha=0.3)
+        self.eb_filter = EMAFilter(alpha=0.3)
+        self.spine_filter = EMAFilter(alpha=0.3)
+        self.l_knee_filter = EMAFilter(alpha=0.3)
+        self.r_knee_filter = EMAFilter(alpha=0.3)
 
     def process(self, landmarks):
 
@@ -83,24 +85,26 @@ class PushupTracker:
             if left_visible and right_visible:
                 left_eb_angle = calculate_angle(left_shoulder, left_elbow, left_wrist)
                 right_eb_angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
-                avg_eb_angle = (left_eb_angle + right_eb_angle) / 2
+                raw_eb_angle = (left_eb_angle + right_eb_angle) / 2
                 
                 left_kn_angle = calculate_angle(left_hip, left_knee, left_ankle)
                 right_kn_angle = calculate_angle(right_hip, right_knee, right_ankle)
-                avg_spine = (calculate_angle(left_shoulder, left_hip, left_ankle) + 
+                raw_spine = (calculate_angle(left_shoulder, left_hip, left_ankle) + 
                              calculate_angle(right_shoulder, right_hip, right_ankle)) / 2
 
             #if only left side is visible then calculate the angles for the left side
             elif left_visible:
-                left_eb_angle = right_eb_angle = avg_eb_angle = calculate_angle(left_shoulder, left_elbow, left_wrist)
-                left_kn_angle = right_kn_angle = calculate_angle(left_hip, left_knee, left_ankle)
-                avg_spine = calculate_angle(left_shoulder, left_hip, left_ankle)
+                raw_eb_angle = calculate_angle(left_shoulder, left_elbow, left_wrist)
+                left_kn_angle = calculate_angle(left_hip, left_knee, left_ankle)
+                right_kn_angle = left_kn_angle
+                raw_spine = calculate_angle(left_shoulder, left_hip, left_ankle)
 
             #if only right side is visible then calculate the angles for the right side
             elif right_visible:
-                right_eb_angle = left_eb_angle = avg_eb_angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
-                right_kn_angle = left_kn_angle = calculate_angle(right_hip, right_knee, right_ankle)
-                avg_spine = calculate_angle(right_shoulder, right_hip, right_ankle)
+                raw_eb_angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
+                right_kn_angle = calculate_angle(right_hip, right_knee, right_ankle)
+                left_kn_angle = right_kn_angle
+                raw_spine = calculate_angle(right_shoulder, right_hip, right_ankle)
 
             #if no side is visible, give the rep count as it is, and send a message to the frontend
             else:
@@ -112,6 +116,13 @@ class PushupTracker:
                     "accuracy": round(accuracy, 2),
                     "feedback": {"form": "Object not in frame/Low visibility"}
                 }
+
+
+            # Apply Smoothing
+            avg_eb_angle = self.eb_filter.apply(raw_eb_angle)
+            avg_spine = self.spine_filter.apply(raw_spine)
+            left_kn_angle = self.l_knee_filter.apply(left_kn_angle)
+            right_kn_angle = self.r_knee_filter.apply(right_kn_angle)
 
             # ---------------- ORIENTATION & CALIBRATION ----------------
             
@@ -151,12 +162,16 @@ class PushupTracker:
                     }
 
             # ---------------- POSITION CHECKS ----------------
-            is_down = avg_eb_angle <= 110
-            is_up = avg_eb_angle >= 155
+            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
+            is_down = avg_eb_angle <= 130 # Relaxed from 100/110
+            is_up = avg_eb_angle >= 150   # Relaxed from 160
             
-            # form checks (Slightly relaxed)
-            knees_ok = (left_kn_angle >= 150 or v5 < 0.5) and (right_kn_angle >= 150 or v11 < 0.5)
-            body_ok = avg_spine >= 140
+            # Form check for Correct Reps (Keep strict for accuracy)
+            is_down_strict = avg_eb_angle <= 100
+            
+            # form checks
+            knees_ok = left_kn_angle >= 150 and right_kn_angle >= 150
+            body_ok = avg_spine >= 150
 
             #set the feedback, for form, knee angle, and elbow angle
             self.form_feedback = "Good posture" if body_ok else "Keep your body straight"
@@ -165,25 +180,25 @@ class PushupTracker:
 
             #machine state logic
             if self.pushup_state == "up":
-                if avg_eb_angle < 145: # Started moving down (partial attempt)
+                # Start moving down
+                if avg_eb_angle < 140: 
                     self.pushup_state = "down"
                     self.rep_valid = True
-                    self.hit_bottom = False # Haven't hit target depth yet
-
-                    if not (body_ok and knees_ok):
-                        self.rep_valid = False
+                    self.hit_bottom = False
 
             elif self.pushup_state == "down":
-                if is_down:
+                if is_down_strict:
                     self.hit_bottom = True
 
+                # Record failures mid-rep if form breaks significantly
                 if not (body_ok and knees_ok):
                     self.rep_valid = False
 
                 if is_up:
                     self.pushup_state = "up"
-                    self.total_reps += 1
+                    self.total_reps += 1 # Always count the attempt
 
+                    # Only count as correct if strict depth and form were met
                     if self.hit_bottom and self.rep_valid:
                         self.correct_reps += 1
                     
