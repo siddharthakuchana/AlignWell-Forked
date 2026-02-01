@@ -1,10 +1,65 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Depends, HTTPException, status, Form
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 import cv2
 import numpy as np
 import base64
 import json
 import mediapipe as mp
+import os
+import sys
+import pymysql
+from datetime import datetime, timezone
+from typing import Optional, List
+from dotenv import load_dotenv
 
+
+# --- PATH SETUP ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
+
+# Load .env from root
+dotenv_path = os.path.join(BASE_DIR, "..", ".env")
+load_dotenv(dotenv_path)
+
+# --- APP SETUP ---
+app = FastAPI()
+
+# Allow CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Static and Templates
+# frontend/scripts and frontend/html files
+app.mount("/scripts", StaticFiles(directory=os.path.join(BASE_DIR, "..", "frontend", "scripts")), name="scripts")
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "..", "frontend", "html files"))
+
+# --- DB & MODELS & UTILS ---
+from database import Base, engine, SessionLocal
+from models import User
+from utils import hash_password, verify_password, create_access_token
+from schemas import RegisterRequest, RegisterResponse, LoginRequest, LoginResponse
+
+Base.metadata.create_all(bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# --- EXERCISE TRACKERS ---
 from pushup import PushupTracker
 from squat import SquatTracker
 from benchpress import BenchPressTracker
@@ -13,26 +68,16 @@ from crunches import CrunchesTracker
 from deadlift import DeadliftTracker
 from shoulderraise import ShoulderRaiseTracker
 
-app = FastAPI()
-
-# MediaPipe Pose
+# --- POSE MODEL ---
 mp_pose = mp.solutions.pose
-pose_model = mp_pose.Pose(
-    static_image_mode=False,
-    model_complexity=1,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5
-)
+pose_model = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-@app.get("/")
-def welcome():
-    return {"status": "online", "message": "AlignWell Backend is running"}
-
+# --- WEBSOCKET ---
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print("✅ Client connected")
-
+    
     tracker = None
     current_exercise = None
 
@@ -40,132 +85,192 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             data = await websocket.receive_text()
             
-            # ---------- TRY JSON ----------
             try:
-                message = json.loads(data)
-                is_json = True
-            except:
-                is_json = False
-
-            # ---------- RESET ACTION ----------
-            if is_json and message.get("action") == "reset":
-                print(f"🔄 Resetting {current_exercise} tracker")
-                if current_exercise == "pushup":
-                    tracker = PushupTracker()
-                elif current_exercise == "squat":
-                    tracker = SquatTracker()
-                elif current_exercise == "benchpress":
-                    tracker = BenchPressTracker()
-                elif current_exercise == "bicepcurl":
-                    tracker = BicepCurlTracker()
-                elif current_exercise == "crunches":
-                    tracker = CrunchesTracker()
-                elif current_exercise == "deadlift":
-                    tracker = DeadliftTracker()
-                elif current_exercise == "shoulderraise":
-                    tracker = ShoulderRaiseTracker()
-                
-                await websocket.send_text(json.dumps({
-                    "status": "ready",
-                    "message": "Stats reset",
-                    "reps": 0,
-                    "total_reps": 0,
-                    "accuracy": 0
-                }))
-                continue
-
-            # ---------- EXERCISE SELECT ----------
-            if is_json and "exercise" in message:
-                ex_type = message["exercise"]
-                
-                if ex_type == current_exercise and tracker is not None:
-                    print(f"🔄 {ex_type} already active - keeping state")
-                    await websocket.send_text(json.dumps({
-                        "status": "ready",
-                        "message": f"{ex_type.capitalize()} tracker resumed"
-                    }))
-                else:
-                    current_exercise = ex_type
-                    print(f"🏋 Switching to: {ex_type}")
-
-                    if ex_type == "pushup":
-                        tracker = PushupTracker()
-                    elif ex_type == "squat":
-                        tracker = SquatTracker()
-                    elif ex_type == "benchpress":
-                        tracker = BenchPressTracker()
-                    elif ex_type == "bicepcurl":
-                        tracker = BicepCurlTracker()
-                    elif ex_type == "crunches":
-                        tracker = CrunchesTracker()
-                    elif ex_type == "deadlift":
-                        tracker = DeadliftTracker()
-                    elif ex_type == "shoulderraise":
-                        tracker = ShoulderRaiseTracker()
-                    else:
-                        current_exercise = None
-                        tracker = None
-                        await websocket.send_text(json.dumps({
-                            "status": "error",
-                            "message": f"Exercise '{ex_type}' not supported"
-                        }))
-                        continue
-
-                    await websocket.send_text(json.dumps({
-                        "status": "ready",
-                        "message": f"{ex_type.capitalize()} tracker started"
-                    }))
-                continue
-
-            # ---------- FRAME ----------
-            if tracker is None:
-                continue
-
-            frame_b64 = data
-            if "," in frame_b64:
-                frame_b64 = frame_b64.split(",")[1]
-
-            try:
-                img_bytes = base64.b64decode(frame_b64)
-                nparr = np.frombuffer(img_bytes, np.uint8)
-                frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-                if frame is None:
+                msg = json.loads(data)
+                if "exercise" in msg:
+                    ex = msg["exercise"]
+                    current_exercise = ex
+                    if ex == "pushup": tracker = PushupTracker()
+                    elif ex == "squat": tracker = SquatTracker()
+                    elif ex == "benchpress": tracker = BenchPressTracker()
+                    elif ex == "bicepcurl": tracker = BicepCurlTracker()
+                    elif ex == "crunches": tracker = CrunchesTracker()
+                    elif ex == "deadlift": tracker = DeadliftTracker()
+                    elif ex == "shoulderraise": tracker = ShoulderRaiseTracker()
+                    await websocket.send_text(json.dumps({"status": "ready", "message": f"{ex} active"}))
                     continue
 
-                rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                results = pose_model.process(rgb)
+                if msg.get("action") == "reset" and tracker:
+                    if current_exercise == "pushup": tracker = PushupTracker()
+                    elif current_exercise == "squat": tracker = SquatTracker()
+                    elif current_exercise == "benchpress": tracker = BenchPressTracker()
+                    elif current_exercise == "bicepcurl": tracker = BicepCurlTracker()
+                    elif current_exercise == "crunches": tracker = CrunchesTracker()
+                    elif current_exercise == "deadlift": tracker = DeadliftTracker()
+                    elif current_exercise == "shoulderraise": tracker = ShoulderRaiseTracker()
+                    await websocket.send_text(json.dumps({"status": "ready", "reps": 0, "accuracy": 0}))
+                    continue
+            except:
+                pass
 
-                if results.pose_landmarks:
-                    landmarks_for_ui = [
-                        {"x": lm.x, "y": lm.y}
-                        for lm in results.pose_landmarks.landmark
-                    ]
+            if tracker:
+                try:
+                    frame_data = data.split(",")[1] if "," in data else data
+                    decoded = base64.b64decode(frame_data)
+                    nparr = np.frombuffer(decoded, np.uint8)
+                    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-                    response = tracker.process(results.pose_landmarks.landmark)
-                    response["landmarks"] = landmarks_for_ui
-                    response["exercise"] = current_exercise
-
-                    await websocket.send_text(json.dumps(response))
-                    # print("📤 processed frame")
-                else:
-                    # Always send current reps even if no person detected
-                    await websocket.send_text(json.dumps({
-                        "status": "nodetect",
-                        "reps": getattr(tracker, 'correct_reps', 0),
-                        "total_reps": getattr(tracker, 'total_reps', 0),
-                        "feedback": {"form": "No person detected"},
-                        "landmarks": []
-                    }))
-
-            except Exception as e:
-                print("❌ Frame error:", e)
-                await websocket.send_text(json.dumps({
-                    "status": "error",
-                    "message": "Frame processing failed"
-                }))
-
+                    if img is not None:
+                        rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                        results = pose_model.process(rgb)
+                        if results.pose_landmarks:
+                            response = tracker.process(results.pose_landmarks.landmark)
+                            response["landmarks"] = [{"x": lm.x, "y": lm.y} for lm in results.pose_landmarks.landmark]
+                            response["exercise"] = current_exercise
+                            await websocket.send_text(json.dumps(response))
+                except:
+                    pass
     except WebSocketDisconnect:
         print("⚠ Client disconnected")
-    except Exception as e:
-        print(f"WebSocket error: {e}")
+
+# --- HTML ROUTES ---
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/register", response_class=HTMLResponse)
+async def register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.get("/detect", response_class=HTMLResponse)
+async def detect_page(request: Request):
+    return templates.TemplateResponse("camera.html", {"request": request})
+
+# --- AUTH API ---
+@app.post("/register")
+async def register_user(
+    request: Request,
+    user_data: RegisterRequest = None,
+    username: str = Form(default=None),
+    email: str = Form(default=None),
+    password: str = Form(default=None),
+    db: Session = Depends(get_db)
+):
+    # Detect if request is JSON or Form
+    if user_data:
+        username = user_data.username
+        email = user_data.email
+        password = user_data.password
+
+    if not username or not email or not password:
+        if request.headers.get('content-type') == 'application/json':
+            raise HTTPException(
+                status_code=400, 
+                detail="All fields are required"
+            )
+        else:
+            return templates.TemplateResponse(
+                "register.html", 
+                {
+                    "request": request,
+                    "error": "All fields are required"
+                },
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+
+    existing_user = db.query(User).filter((User.username == username) | (User.email == email)).first()
+
+    if existing_user:
+        if request.headers.get('content-type') == 'application/json':
+            raise HTTPException(
+                status_code=400, 
+                detail="Username or email already exists"
+            )
+        else:
+            return templates.TemplateResponse(
+                "register.html", 
+                {
+                    "request": request,
+                    "error": "Username or email already exists"
+                },
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+
+    new_user = User(
+        username=username,
+        email=email,
+        password=hash_password(password)
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    if request.headers.get('content-type') == 'application/json':
+        return RegisterResponse(
+            user_id = new_user.id,
+            username = new_user.username,
+            email = new_user.email,
+            created_at = new_user.created_at
+        )
+    else:
+        return templates.TemplateResponse(
+            "register.html", 
+            {
+                "request": request,
+                "message": "Registration successful! You can now login."
+            },
+            status_code=status.HTTP_201_CREATED
+        )
+
+@app.post("/login")
+def login_user(
+    # the email, password are taken from the form data
+    email: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+
+    #checks if the user email already exists
+    user = db.query(User).filter(User.email == email).first()
+
+    # checks if the password is correct and modifies the variable error as query param here 
+    if not user or not verify_password(password, user.password):
+        return RedirectResponse(
+            url="/login?error=invalid_credentials",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    # access token is created
+    access_token = create_access_token(
+        data={"sub": str(user.id)}
+    )
+
+    # redirected to dashboard.html if the user is logged in successfully
+    response = RedirectResponse(
+        url="/detect",
+        status_code=status.HTTP_303_SEE_OTHER,
+
+    )
+
+    # the response cookie is set
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=False,   # set True in production (HTTPS)
+        samesite="lax",
+    )
+
+    return response
+
+
+# rendering of the dashboard.html
+@app.get("/detect")
+def dashboard(request: Request, db: Session = Depends(get_db)):
+    # checks if the user is logged in
+    return templates.TemplateResponse("detect.html", {"request": request})

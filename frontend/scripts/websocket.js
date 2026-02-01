@@ -1,159 +1,95 @@
-const socket = new WebSocket("ws://127.0.0.1:8000/ws");
-
+// WebSocket configuration
+// We try 'localhost' first as it's more reliable on Mac
+const socket = new WebSocket("ws://localhost:8000/ws");
 let socketReady = false;
-
-// ------------------ CONNECTION ------------------
 
 socket.onopen = () => {
     socketReady = true;
-    console.log("✅ Connected to WebSocket");
+    console.log("✅ WebSocket Connected to localhost");
     const out = document.getElementById("output");
-    if (out) out.innerText = "Connected to server";
+    if (out) out.innerText = "Connected to Server";
 };
 
-socket.onerror = (e) => {
-    console.error("❌ WebSocket error", e);
-};
-
-socket.onclose = () => {
+socket.onclose = (event) => {
     socketReady = false;
-    console.log("⚠ WebSocket closed");
+    console.log("⚠ WebSocket Closed", event.code);
+    const out = document.getElementById("output");
+    if (out) out.innerText = "Server Disconnected. Re-run uvicorn.";
 };
 
-// ------------------ EXERCISE SELECTION ------------------
+socket.onerror = (err) => {
+    console.error("❌ socket error:", err);
+};
 
-function selectExercise(type) {
-    if (!socketReady) {
-        alert("Server not connected yet");
-        return;
+// Handle messages from backend
+socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    // 1. Update Reps & Accuracy
+    if (data.reps !== undefined) {
+        document.getElementById("repText").innerText = `Reps: ${data.reps}${data.total_reps ? ` (Total: ${data.total_reps})` : ''}`;
+        if (data.accuracy !== undefined) {
+            document.getElementById("accuracyText").innerText = `Accuracy: ${data.accuracy}%`;
+        }
     }
 
-    console.log("🏋 Exercise selected:", type);
-    window.selectedExercise = type;   // store globally
+    // 2. Feedback & Status
+    if (data.feedback) {
+        const feedback = data.feedback.form || Object.values(data.feedback)[0] || "Tracking...";
+        const formEl = document.getElementById("formText");
+        if (formEl) formEl.innerText = feedback;
 
-    socket.send(JSON.stringify({ exercise: type }));
+        const statusEl = document.getElementById("statusText");
+        if (statusEl) {
+            const fbLower = feedback.toLowerCase();
+            if (fbLower.includes("good") || fbLower.includes("correct")) {
+                statusEl.innerText = "Correct ✔";
+                statusEl.style.color = "green";
+            } else if (fbLower.includes("waiting") || fbLower.includes("position") || fbLower.includes("steady")) {
+                statusEl.innerText = "Waiting...";
+                statusEl.style.color = "orange";
+            } else {
+                statusEl.innerText = "Improve";
+                statusEl.style.color = "red";
+            }
+        }
+    }
 
-    const out = document.getElementById("output");
-    if (out) out.innerText = `Started ${type}`;
+    // 3. Draw Skeleton
+    if (data.landmarks) {
+        drawSkeleton(data.landmarks);
+    }
+};
+
+// Controls
+function selectExercise(type) {
+    if (socketReady) {
+        console.log("Selecting:", type);
+        socket.send(JSON.stringify({ exercise: type }));
+        const out = document.getElementById("output");
+        if (out) out.innerText = `Exercise: ${type.toUpperCase()}`;
+    } else {
+        alert("Server not connected! Please start the backend server.");
+    }
 }
 
-// ------------------ RESET ------------------
-
 function resetStats() {
-    if (confirm("Are you sure you want to reset all stats for this session?")) {
+    if (socketReady && confirm("Reset session?")) {
         socket.send(JSON.stringify({ action: "reset" }));
     }
 }
 
-// ------------------ RECEIVE FROM BACKEND ------------------
-
-socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    console.log("DATA:", data);
-
-    // -------- REPS & ACCURACY --------
-    if (data.reps !== undefined) {
-        const repText = document.getElementById("repText");
-        const totalReps = data.total_reps !== undefined ? ` (Total: ${data.total_reps})` : "";
-        if (repText) repText.innerText = `Reps: ${data.reps}${totalReps}`;
-
-        const accuracyText = document.getElementById("accuracyText");
-        if (accuracyText && data.accuracy !== undefined) {
-            accuracyText.innerText = `Accuracy: ${data.accuracy}%`;
-        }
-    }
-
-    // -------- ANGLES --------
-    if (data.angles) {
-        const angleDisplay = document.getElementById("angleDisplay");
-        const angleContent = document.getElementById("angleContent");
-
-        if (angleDisplay && angleContent) {
-            angleDisplay.style.display = "block";
-            let angleHtml = "";
-            let sum = 0;
-            let count = 0;
-
-            for (const [name, val] of Object.entries(data.angles)) {
-                angleHtml += `<div>${name}: ${val}°</div>`;
-                if (name.includes("elbow") || name.includes("knee")) {
-                    sum += val;
-                    count++;
-                }
-            }
-
-            if (count > 1) {
-                angleHtml += `<div style="border-top:1px solid #ddd;margin-top:5px;font-weight:bold;">
-                                Average: ${Math.round(sum / count)}°
-                              </div>`;
-            }
-
-            angleContent.innerHTML = angleHtml;
-        }
-    }
-
-    // -------- FEEDBACK --------
-    if (data.feedback) {
-        let primaryFeedback = "";
-
-        for (const [key, value] of Object.entries(data.feedback)) {
-            if (["form", "posture", "knee", "elbow"].includes(key)) {
-                if (!primaryFeedback || primaryFeedback.toLowerCase().includes("good")) {
-                    primaryFeedback = value;
-                }
-            }
-        }
-
-        const formText = document.getElementById("formText");
-        if (formText) formText.innerText = primaryFeedback || "Tracking...";
-
-        const status = document.getElementById("statusText");
-        if (status) {
-            const fbLower = (primaryFeedback || "").toLowerCase();
-
-            if (fbLower.includes("good") || fbLower.includes("correct")) {
-                status.innerText = "Correct ✔";
-                status.style.color = "green";
-            } else if (
-                fbLower.includes("person") ||
-                fbLower.includes("frame") ||
-                fbLower.includes("waiting") ||
-                fbLower.includes("steady") ||
-                fbLower.includes("position")
-            ) {
-                status.innerText = "Waiting...";
-                status.style.color = "orange";
-            } else {
-                status.innerText = "Improve";
-                status.style.color = "red";
-            }
-        }
-    }
-
-    // -------- LANDMARKS --------
-    if (data.landmarks && data.landmarks.length > 0) {
-        drawSkeleton(data.landmarks);
-    } else {
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-};
-
-// ------------------ DRAW SKELETON ------------------
-
+// Visualization
 function drawSkeleton(landmarks) {
     const canvas = document.getElementById("canvas");
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#00ff00";
 
     landmarks.forEach(lm => {
-        const x = lm.x * canvas.width;
-        const y = lm.y * canvas.height;
         ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 4, 0, Math.PI * 2);
         ctx.fill();
     });
 }

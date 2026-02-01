@@ -2,19 +2,29 @@ import os
 import pymysql
 from dotenv import load_dotenv
 
-# Load .env file
-load_dotenv()
+# --- Robust Path Setup ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Try loading .env from current dir or parent dir
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+load_dotenv(os.path.join(BASE_DIR, "..", ".env"))
 
 HOST = os.getenv("HOST")
 PORT = int(os.getenv("PORT", 4000))
-USER = os.getenv("USER")
+USER = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
-DB = os.getenv("DB")
+DB = os.getenv("DATABASE")
 SSL_CA = os.getenv("SSL_CA")
+
+# Resolve SSL_CA path relative to the script location
+if SSL_CA and (not os.path.isabs(SSL_CA)):
+    # If it starts with ./ removes it
+    clean_path = SSL_CA[2:] if SSL_CA.startswith("./") else SSL_CA
+    SSL_CA = os.path.join(BASE_DIR, clean_path)
 
 print("🔍 Testing TiDB connection...")
 print("Host:", HOST)
 print("Database:", DB)
+print("SSL Cert Path:", SSL_CA)
 
 try:
     conn = pymysql.connect(
