@@ -1,4 +1,12 @@
+# Python cache
 __pycache__/
 *.pyc
+
+# Virtual environment
 venv/
-.gitignore
+
+# Environment variables (SECRETS)
+.env
+
+# OS files
+.DS_Store

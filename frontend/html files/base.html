@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}AlignWell{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 🌈 GLOBAL DASHBOARD STYLES -->
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f5f7fb;
+            color: #2d3748;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: white;
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+        }
+
+        .navbar .brand {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 18px;
+            font-weight: 500;
+        }
+
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+
+        .logout-btn {
+            background: white;
+            color: #667eea;
+            padding: 6px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* PAGE CONTENT AREA */
+        .content {
+            max-width: 1200px;
+            margin: 24px auto;
+            padding: 0 16px;
+        }
+    </style>
+
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- 🔥 DASHBOARD NAVBAR (INHERITED EVERYWHERE) -->
+    <nav class="navbar">
+        <div class="brand">AlignWell</div>
+        {% if username %}
+        <div class="brand">Welcome {{ username }}</div>
+        {% endif %}
+
+        <div>
+            <a href="/detect">Dashboard</a>
+            <a href="/guide">Guide</a>
+            <a href="/contributors">Creators</a>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </nav>
+
+    <!-- 🔥 PAGE-SPECIFIC CONTENT -->
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 🔑 GLOBAL SCRIPTS -->
+    <script src="/scripts/websocket.js?v=1.3"></script>
+    <script src="/scripts/camera.js?v=1.3"></script>
+
+    {% block scripts %}{% endblock %}
+
+</body>
+
+</html>

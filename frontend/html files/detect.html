@@ -1,50 +1,261 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard | AlignWell</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
+{% block title %}Dashboard | AlignWell{% endblock %}
 
-<body>
+{% block head %}
+<style>
+    /* DASHBOARD LAYOUT */
+    .container {
+        display: flex;
+        gap: 24px;
+        margin-top: 20px;
+    }
 
-    <script>
-        if (localStorage.getItem("isLoggedIn") !== "true") {
-            alert("You are not logged in. Please login first.");
-            localStorage.setItem("returnUrl", window.location.href);
-            window.location.href = "login.html";
-        }
-    </script>
+    /* SIDEBAR */
+    .sidebar {
+        width: 230px;
+        background: white;
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
 
-    <nav class="navbar">
-        <span>AlignWell</span>
+    .sidebar h3 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+        color: #4a5568;
+        border-bottom: 2px solid #edf2f7;
+        padding-bottom: 10px;
+    }
 
-        <span>
-            <a href="detect.html">Features</a> |
-            <a href="guide.html">Guide</a> |
-            <a href="contributors.html">Creators</a>
-        </span>
+    .exercise {
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 500;
+        color: #4a5568;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
 
-        <span>
-            👤 <b id="user"></b>
-            <button onclick="logout()">Logout</button>
-        </span>
-    </nav>
+    .exercise:hover {
+        background: #f7fafc;
+        border-color: #667eea;
+        color: #667eea;
+    }
 
-    <h2>Posture Detection Dashboard</h2>
-    <p>Webcam & video upload will be added here.</p>
+    .exercise.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
 
-    <script>
-        document.getElementById("user").innerText =
-            localStorage.getItem("username");
+    /* MAIN PANEL */
+    .main {
+        flex: 1;
+        background: white;
+        padding: 24px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = "index.html";
-        }
-    </script>
+    .main h2 {
+        margin-top: 0;
+        text-align: center;
+        color: #2d3748;
+        font-weight: 700;
+    }
 
-</body>
+    /* CAMERA */
+    .video-box {
+        position: relative;
+        width: 640px;
+        height: 480px;
+        margin: 24px auto;
+        background: #1a202c;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border: 4px solid #fff;
+    }
 
-</html>
+    video,
+    canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 640px;
+        height: 480px;
+    }
+
+    #canvas {
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    /* STATS CARD GRID */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 24px;
+    }
+
+    .stat-card {
+        background: #f8fafc;
+        padding: 16px;
+        border-radius: 14px;
+        text-align: center;
+        border: 1px solid #edf2f7;
+        transition: transform 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .stat-card b {
+        display: block;
+        font-size: 24px;
+        color: #667eea;
+        margin-bottom: 4px;
+    }
+
+    .stat-card span {
+        font-size: 14px;
+        color: #718096;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* STATUS AREA */
+    .status-container {
+        margin-top: 20px;
+        text-align: center;
+        padding: 12px;
+        background: #fdf2f2;
+        /* Default light red background */
+        border-radius: 12px;
+        transition: background 0.3s ease;
+    }
+
+    #statusText {
+        font-size: 18px;
+        font-weight: 700;
+        color: #e53e3e;
+    }
+
+    /* CONTROLS */
+    .controls {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 24px;
+    }
+
+    .controls button {
+        padding: 12px 28px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-start {
+        background: #38a169;
+        color: white;
+        box-shadow: 0 4px 10px rgba(56, 161, 105, 0.3);
+    }
+
+    .btn-start:hover {
+        background: #2f855a;
+        transform: scale(1.05);
+    }
+
+    .btn-stop {
+        background: #e53e3e;
+        color: white;
+        box-shadow: 0 4px 10px rgba(229, 62, 62, 0.3);
+    }
+
+    .btn-stop:hover {
+        background: #c53030;
+        transform: scale(1.05);
+    }
+
+    .btn-reset {
+        background: #718096;
+        color: white;
+        box-shadow: 0 4px 10px rgba(113, 128, 150, 0.3);
+    }
+
+    .btn-reset:hover {
+        background: #4a5568;
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h3>Exercises</h3>
+        <div class="exercise" onclick="selectExercise('pushup')">Pushups</div>
+        <div class="exercise" onclick="selectExercise('squat')">Squats</div>
+        <div class="exercise" onclick="selectExercise('deadlift')">Deadlift</div>
+        <div class="exercise" onclick="selectExercise('shoulderraise')">Shoulder Raise</div>
+        <div class="exercise" onclick="selectExercise('crunches')">Crunches</div>
+        <div class="exercise" onclick="selectExercise('bicepcurl')">Bicep Curls</div>
+        <div class="exercise" onclick="selectExercise('benchpress')">Bench Press</div>
+    </div>
+
+    <!-- MAIN AREA -->
+    <div class="main">
+        <h2 id="exerciseTitle">Select an Exercise</h2>
+
+        <!-- CAMERA -->
+        <div class="video-box">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <!-- STATS GRID -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <b id="repText">0</b>
+                <span>Reps</span>
+            </div>
+            <div class="stat-card">
+                <b id="accuracyText">0%</b>
+                <span>Accuracy</span>
+            </div>
+            <div class="stat-card">
+                <b id="formText">--</b>
+                <span>Feedback</span>
+            </div>
+            <div class="stat-card">
+                <b id="bodyStatusText">--</b>
+                <span>Sensors</span>
+            </div>
+        </div>
+
+        <!-- STATUS CONTAINER -->
+        <div class="status-container" id="statusBox">
+            <div id="statusText">Ready to Begin</div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <button class="btn-start" onclick="startCamera()">Start Session</button>
+            <button class="btn-stop" onclick="stopCamera()">Pause</button>
+            <button class="btn-reset" onclick="resetStats()">Reset Stats</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

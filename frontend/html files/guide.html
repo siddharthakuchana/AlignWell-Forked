@@ -1,141 +1,105 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Guide | AlignWell</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block title %}Contributors | AlignWell{% endblock %}
 
-    <style>
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 20px;
-            background: #222;
-            color: white;
-        }
+{% block head %}
 
-        .exercise-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
-            padding: 40px;
-        }
+<style>
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 20px;
+        background: #222;
+        color: white;
+    }
 
-        .card {
-            border: 1px solid #ccc;
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+    .exercise-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 25px;
+        padding: 40px;
+    }
 
-        .card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
+    .card {
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.3s;
+    }
 
-        .card img {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            border-radius: 10px;
-        }
-    </style>
+    .card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
 
-</head>
+    .card img {
+        width: 100%;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+</style>
 
-<body>
+{% endblock %}
 
-    <!-- ===== AUTH CHECK ===== -->
-    <script>
-        if (localStorage.getItem("isLoggedIn") !== "true") {
-            alert("You are not logged in. Please login first.");
-            localStorage.setItem("returnUrl", window.location.href);
-            window.location.href = "login.html";
-        }
-    </script>
+{% block content %}
 
-    <!-- ===== NAVBAR ===== -->
-    <nav class="navbar">
-        <span>
-            AlignWell |
-            <a href="detect.html" style="color:white;">Dashboard</a>
-        </span>
+<h2 style="text-align:center;margin-top:25px;">Exercise Guide</h2>
 
-        <span>
-            👤 <b id="user"></b>
-            <button onclick="logout()">Logout</button>
-        </span>
-    </nav>
+<!-- ===== EXERCISE CARDS ===== -->
+<div class="exercise-container">
 
-    <h2 style="text-align:center;margin-top:25px;">Exercise Guide</h2>
-
-    <!-- ===== EXERCISE CARDS ===== -->
-    <div class="exercise-container">
-
-        <div class="card" onclick="go('pushups.html')">
-            <img src="pushup.jpg">
-            <h3>Push Ups</h3>
-            <p>Chest & Arms</p>
-        </div>
-
-        <div class="card" onclick="go('squats.html')">
-            <img src="squat.jpg">
-            <h3>Squats</h3>
-            <p>Leg Strength</p>
-        </div>
-
-        <div class="card" onclick="go('plank.html')">
-            <img src="plank.jpg">
-            <h3>Plank</h3>
-            <p>Core</p>
-        </div>
-
-        <div class="card" onclick="go('lunges.html')">
-            <img src="lunges.jpg">
-            <h3>Lunges</h3>
-            <p>Lower Body</p>
-        </div>
-
-        <div class="card" onclick="go('shoulder.html')">
-            <img src="shoulder.jpg">
-            <h3>Shoulder Press</h3>
-            <p>Shoulders</p>
-        </div>
-
-        <div class="card" onclick="go('crunches.html')">
-            <img src="crunches.jpg">
-            <h3>Crunches</h3>
-            <p>Abs</p>
-        </div>
-
-        <div class="card" onclick="go('jumpingjacks.html')">
-            <img src="jumping.jpg">
-            <h3>Jumping Jacks</h3>
-            <p>Warm Up</p>
-        </div>
-
+    <div class="card" onclick="window.location.href = '/pushup'">
+        <img src="pushup.jpg">
+        <h3>Push Ups</h3>
+        <p>Chest & Arms</p>
     </div>
 
-    <script>
-        document.getElementById("user").innerText =
-            localStorage.getItem("username");
+    <div class="card" onclick="window.location.href = '/squats'">
+        <img src="squat.jpg">
+        <h3>Squats</h3>
+        <p>Leg Strength</p>
+    </div>
 
-        function go(page) {
-            window.location.href = page;
-        }
+    <div class="card" onclick=" window.location.href = '/plank'">
+        <img src="plank.jpg">
+        <h3>Plank</h3>
+        <p>Core</p>
+    </div>
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = "index.html";
-        }
-    </script>
+    <div class="card" onclick="go('lunges.html')">
+        <img src="lunges.jpg">
+        <h3>Lunges</h3>
+        <p>Lower Body</p>
+    </div>
 
-</body>
+    <div class="card" onclick="go('shoulder.html')">
+        <img src="shoulder.jpg">
+        <h3>Shoulder Press</h3>
+        <p>Shoulders</p>
+    </div>
 
-</html>
+    <div class="card" onclick="go('crunches.html')">
+        <img src="crunches.jpg">
+        <h3>Crunches</h3>
+        <p>Abs</p>
+    </div>
+
+    <div class="card" onclick="go('jumpingjacks.html')">
+        <img src="jumping.jpg">
+        <h3>Jumping Jacks</h3>
+        <p>Warm Up</p>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block footer %}
+{% endblock %}
+
 /*Images to keep in folder:
 pushup.jpg
 squat.jpg

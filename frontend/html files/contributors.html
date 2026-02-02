@@ -1,128 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Creators | AlignWell</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block title %}Contributors | AlignWell{% endblock %}
 
-    <style>
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 20px;
-            background: #222;
-            color: white;
-        }
+{% block head %}
+<style>
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 20px;
+        background: #222;
+        color: white;
+    }
 
-        .team-container {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 50px;
-        }
+    .team-container {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-top: 50px;
+    }
 
-        .member-card {
-            width: 200px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            text-align: center;
-            padding: 15px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+    .member-card {
+        width: 200px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        text-align: center;
+        padding: 15px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
 
-        .member-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
+    .member-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
 
-        .member-card img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
+    .member-card img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
 
-        .desc {
-            color: #555;
-            font-size: 14px;
-        }
-    </style>
+    .desc {
+        color: #555;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
 
-</head>
+{% block content %}
 
-<body>
+<h2 style="text-align:center;margin-top:30px;">Project Creators</h2>
 
-    <!-- ===== AUTH CHECK ===== -->
-    <script>
-        if (localStorage.getItem("isLoggedIn") !== "true") {
-            alert("You are not logged in. Please login first.");
-            localStorage.setItem("returnUrl", window.location.href);
-            window.location.href = "login.html";
-        }
-    </script>
+<!-- ===== TEAM MEMBERS ===== -->
+<div class="team-container">
 
-    <!-- ===== NAVBAR ===== -->
-    <nav class="navbar">
-        <span>
-            AlignWell |
-            <a href="detect.html" style="color:white;">Dashboard</a>
-        </span>
-
-        <span>
-            👤 <b id="user"></b>
-            <button onclick="logout()">Logout</button>
-        </span>
-    </nav>
-
-    <h2 style="text-align:center;margin-top:30px;">Project Creators</h2>
-
-    <!-- ===== TEAM MEMBERS ===== -->
-    <div class="team-container">
-
-        <!-- MEMBER 1 -->
-        <div class="member-card" onclick="openProfile('https://www.linkedin.com/in/yourprofile1')">
-            <img src="member1.jpg" alt="Member 1">
-            <h4>Your Name</h4>
-            <p class="desc">AI & Backend Dev</p>
-        </div>
-
-        <!-- MEMBER 2 -->
-        <div class="member-card" onclick="openProfile('https://www.linkedin.com/in/yourprofile2')">
-            <img src="member2.jpg" alt="Member 2">
-            <h4>Member Two</h4>
-            <p class="desc">Frontend Developer</p>
-        </div>
-
-        <!-- MEMBER 3 -->
-        <div class="member-card" onclick="openProfile('https://www.linkedin.com/in/yourprofile3')">
-            <img src="member3.jpg" alt="Member 3">
-            <h4>Member Three</h4>
-            <p class="desc">ML & Testing</p>
-        </div>
-
-        /* the thrre images jpg1,2,3 mst be exist in the same directory */
-
+    <!-- MEMBER 1 -->
+    <div class="member-card" onclick="openProfile('https://www.linkedin.com/in/yourprofile1')">
+        <img src="member1.jpg" alt="Member 1">
+        <h4>Your Name</h4>
+        <p class="desc">Computer Vision & Backend Dev</p>
     </div>
 
-    <script>
-        /* show username */
-        document.getElementById("user").innerText =
-            localStorage.getItem("username");
+    <!-- MEMBER 2 -->
+    <div class="member-card" onclick="openProfile('https://www.linkedin.com/in/yourprofile2')">
+        <img src="member2.jpg" alt="Member 2">
+        <h4>Member Two</h4>
+        <p class="desc">Frontend Dev</p>
+    </div>
 
-        /* open linkedin */
-        function openProfile(url) {
-            window.open(url, "_blank");
-        }
+    <!-- MEMBER 3 -->
+    <div class="member-card" onclick="openProfile('https://www.linkedin.com/in/yourprofile3')">
+        <img src="member3.jpg" alt="Member 3">
+        <h4>Member Three</h4>
+        <p class="desc">Backend Dev & Testing</p>
+    </div>
 
-        /* logout */
-        function logout() {
-            localStorage.clear();
-            window.location.href = "index.html";
-        }
-    </script>
+    /* the thrre images jpg1,2,3 mst be exist in the same directory */
 
-</body>
+</div>
 
-</html>
+{% endblock %}
+
+{% block footer %}
+{% endblock %}
