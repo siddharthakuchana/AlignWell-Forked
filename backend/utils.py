@@ -1,12 +1,12 @@
 import os
+import hashlib
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from dotenv import load_dotenv
-from fastapi import Request, HTTPException, status
+from fastapi import Request
 
-# Load .env from root
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 dotenv_path = os.path.join(BASE_DIR, "..", ".env")
 load_dotenv(dotenv_path)
@@ -15,44 +15,39 @@ SECRET_KEY = os.getenv("SECRET_KEY", "your-fallback-secret-key")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", 60))
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto"
+)
 
-def hash_password(password: str):
-    return pwd_context.hash(password)
+def _prehash(password: str) -> str:
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
-def verify_password(password: str, hashed_password: str):
-    return pwd_context.verify(password, hashed_password)
+def hash_password(password: str) -> str:
+    return pwd_context.hash(_prehash(password))
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def verify_password(password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(_prehash(password), hashed_password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + (
+        expires_delta if expires_delta else timedelta(minutes=EXPIRE_MINUTES)
+    )
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def get_current_user_id(request: Request) -> str:
+def get_current_user_id(request: Request) -> Optional[str]:
     token = request.cookies.get("access_token")
 
-    #if there is no token, no authentication
     if not token:
         return None
 
+    if token.startswith("Bearer "):
+        token = token.split(" ", 1)[1]
+
     try:
-        #jwt decoding gives the user_id from the token
-        payload = jwt.decode(
-            token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM],
-        )
-        user_id = payload.get("sub")
-
-        if user_id is None:
-            return None
-
-        return user_id
-
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload.get("sub")
     except JWTError:
         return None

@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import cv2
 import numpy as np
@@ -16,7 +15,6 @@ import pymysql
 from datetime import datetime, timezone
 from typing import Optional, List
 from dotenv import load_dotenv
-
 
 # --- PATH SETUP ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -40,17 +38,17 @@ app.add_middleware(
 )
 
 # Static and Templates
-# frontend/scripts and frontend/html files
 app.mount("/scripts", StaticFiles(directory=os.path.join(BASE_DIR, "..", "frontend", "scripts")), name="scripts")
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "..", "frontend", "html files"))
 
 # --- DB & MODELS & UTILS ---
 from database import Base, engine, SessionLocal
 from models import User
-from utils import hash_password, verify_password, create_access_token
+from utils import hash_password, verify_password, create_access_token, get_current_user_id
 from schemas import RegisterRequest, RegisterResponse, LoginRequest, LoginResponse
 
-Base.metadata.create_all(bind=engine)
+if __name__ == "__main__":
+    Base.metadata.create_all(bind=engine)
 
 def get_db():
     db = SessionLocal()
@@ -128,149 +126,156 @@ async def websocket_endpoint(websocket: WebSocket):
                             response["landmarks"] = [{"x": lm.x, "y": lm.y} for lm in results.pose_landmarks.landmark]
                             response["exercise"] = current_exercise
                             await websocket.send_text(json.dumps(response))
-                except:
-                    pass
-    except WebSocketDisconnect:
-        print("⚠ Client disconnected")
+                except Exception as e:
+                    print("WebSocket error:", e)
+
+    except Exception as e:
+        print("WebSocket error:", e)
+
 
 # --- HTML ROUTES ---
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
+@app.get("/")
+def index(request: Request, response_class=HTMLResponse):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.get("/register", response_class=HTMLResponse)
-async def register_page(request: Request):
+@app.get("/register")
+def register_page(request: Request, response_class=HTMLResponse):
     return templates.TemplateResponse("register.html", {"request": request})
 
-@app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
+@app.get("/login")
+def login_page(request: Request, response_class=HTMLResponse):
     return templates.TemplateResponse("login.html", {"request": request})
 
-@app.get("/detect", response_class=HTMLResponse)
-async def detect_page(request: Request):
-    return templates.TemplateResponse("camera.html", {"request": request})
 
 # --- AUTH API ---
 @app.post("/register")
 async def register_user(
     request: Request,
-    user_data: RegisterRequest = None,
-    username: str = Form(default=None),
-    email: str = Form(default=None),
-    password: str = Form(default=None),
+    username: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    # Detect if request is JSON or Form
-    if user_data:
-        username = user_data.username
-        email = user_data.email
-        password = user_data.password
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        try:
+            data = await request.json()
+            username = data.get("username")
+            email = data.get("email")
+            password = data.get("password")
+        except:
+            pass
 
     if not username or not email or not password:
-        if request.headers.get('content-type') == 'application/json':
-            raise HTTPException(
-                status_code=400, 
-                detail="All fields are required"
-            )
-        else:
-            return templates.TemplateResponse(
-                "register.html", 
-                {
-                    "request": request,
-                    "error": "All fields are required"
-                },
-                status_code=status.HTTP_400_BAD_REQUEST
-            )
+        if "application/json" in content_type:
+            raise HTTPException(status_code=400, detail="All fields are required")
+        return templates.TemplateResponse("register.html", {"request": request, "error": "All fields are required"}, status_code=400)
 
     existing_user = db.query(User).filter((User.username == username) | (User.email == email)).first()
-
     if existing_user:
-        if request.headers.get('content-type') == 'application/json':
-            raise HTTPException(
-                status_code=400, 
-                detail="Username or email already exists"
-            )
-        else:
-            return templates.TemplateResponse(
-                "register.html", 
-                {
-                    "request": request,
-                    "error": "Username or email already exists"
-                },
-                status_code=status.HTTP_400_BAD_REQUEST
-            )
+        if "application/json" in content_type:
+            raise HTTPException(status_code=400, detail="Username or email already exists")
+        return templates.TemplateResponse(
+            "register.html",
+            {
+                "request": request, 
+                "error": "Username or email already exists"
+            }, 
+            status_code=400
+        )
 
     new_user = User(
         username=username,
         email=email,
-        password=hash_password(password)
+        password=hash_password(password),
+        created_at=datetime.now(timezone.utc)
     )
-
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
-    if request.headers.get('content-type') == 'application/json':
-        return RegisterResponse(
-            user_id = new_user.id,
-            username = new_user.username,
-            email = new_user.email,
-            created_at = new_user.created_at
-        )
-    else:
-        return templates.TemplateResponse(
-            "register.html", 
-            {
-                "request": request,
-                "message": "Registration successful! You can now login."
-            },
-            status_code=status.HTTP_201_CREATED
-        )
+
+    if "application/json" in content_type:
+        return RegisterResponse.model_validate(new_user)
+    
+    return RedirectResponse(
+        url="/login?message=Registration successful",
+        status_code=status.HTTP_303_SEE_OTHER
+    )
+
 
 @app.post("/login")
-def login_user(
-    # the email, password are taken from the form data
+async def login_user(
+    request: Request,
     email: str = Form(...),
     password: str = Form(...),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db)
 ):
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        try:
+            data = await request.json()
+            email = data.get("email")
+            password = data.get("password")
+        except:
+            pass
 
-    #checks if the user email already exists
-    user = db.query(User).filter(User.email == email).first()
-
-    # checks if the password is correct and modifies the variable error as query param here 
-    if not user or not verify_password(password, user.password):
-        return RedirectResponse(
-            url="/login?error=invalid_credentials",
-            status_code=status.HTTP_303_SEE_OTHER,
+    if not email or not password:
+        if "application/json" in content_type:
+            raise HTTPException(status_code=400, detail="Email and password required")
+        return templates.TemplateResponse(
+            "login.html", 
+            {
+                "request": request, 
+                "error": "Email and password required"
+            }, 
+            status_code=400
         )
 
-    # access token is created
-    access_token = create_access_token(
-        data={"sub": str(user.id)}
-    )
+    user = db.query(User).filter(User.email == email).first()
+    if not user or not verify_password(password, user.password):
+        if "application/json" in content_type:
+            raise HTTPException(status_code=400, detail="Invalid credentials")
+        return templates.TemplateResponse(
+            "login.html", 
+            {
+                "request": request, 
+                "error": "Invalid credentials"
+            },
+            status_code=400
+        )
 
-    # redirected to dashboard.html if the user is logged in successfully
-    response = RedirectResponse(
-        url="/detect",
-        status_code=status.HTTP_303_SEE_OTHER,
+    access_token = create_access_token(data={"sub": str(user.id), "username": user.username})
 
-    )
-
-    # the response cookie is set
+    if "application/json" in content_type:
+        return LoginResponse(
+            user_id=user.id,
+            username=user.username,
+            email=user.email,
+            access_token=access_token
+        )
+    
+    response = RedirectResponse(url="/detect", status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie(
-        key="access_token",
-        value=access_token,
+        key="access_token", 
+        value=f"Bearer {access_token}", 
         httponly=True,
-        secure=False,   # set True in production (HTTPS)
         samesite="lax",
+        secure=False # Set to True in production with HTTPS
     )
-
     return response
 
 
-# rendering of the dashboard.html
 @app.get("/detect")
-def dashboard(request: Request, db: Session = Depends(get_db)):
-    # checks if the user is logged in
-    return templates.TemplateResponse("detect.html", {"request": request})
+def detect_page(request: Request, db: Session = Depends(get_db), response_class=HTMLResponse):
+    # Check if user is logged in
+    user_id = get_current_user_id(request)
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    
+    # Verify user exists
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user:
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+        
+    return templates.TemplateResponse("detect.html", {"request": request, "username": user.username})
