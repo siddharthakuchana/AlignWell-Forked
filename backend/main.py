@@ -129,21 +129,22 @@ async def websocket_endpoint(websocket: WebSocket):
                 except Exception as e:
                     print("WebSocket error:", e)
 
+    except WebSocketDisconnect:
+        print("⚠ Client disconnected")
     except Exception as e:
-        print("WebSocket error:", e)
-
+        print(f"❌ WebSocket error: {e}")
 
 # --- HTML ROUTES ---
-@app.get("/")
-def index(request: Request, response_class=HTMLResponse):
+@app.get("/", response_class=HTMLResponse)
+def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.get("/register")
-def register_page(request: Request, response_class=HTMLResponse):
+@app.get("/register", response_class=HTMLResponse)
+def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
-@app.get("/login")
-def login_page(request: Request, response_class=HTMLResponse):
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
@@ -266,8 +267,8 @@ async def login_user(
     return response
 
 
-@app.get("/detect")
-def detect_page(request: Request, db: Session = Depends(get_db), response_class=HTMLResponse):
+@app.get("/detect", response_class=HTMLResponse)
+def detect_page(request: Request, db: Session = Depends(get_db)):
     # Check if user is logged in
     user_id = get_current_user_id(request)
     if not user_id:
@@ -278,4 +279,68 @@ def detect_page(request: Request, db: Session = Depends(get_db), response_class=
     if not user:
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
         
-    return templates.TemplateResponse("detect.html", {"request": request, "username": user.username})
+    return templates.TemplateResponse(
+        "detect.html", 
+        {
+            "request": request, 
+            "username": user.username
+        }
+    )
+
+
+@app.get("/logout")
+def logout():
+    response = RedirectResponse(
+        url="/login",
+        status_code=status.HTTP_302_FOUND
+    )
+    #only removes the cookie if everything matches
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        samesite="lax",
+        secure=False
+    )
+    return response
+
+
+@app.get("/contributors", response_class=HTMLResponse)
+def guide_page(request: Request, db: Session = Depends(get_db)):
+    # Check if user is logged in
+    user_id = get_current_user_id(request)
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    
+    # Verify user exists
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user:
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+        
+    return templates.TemplateResponse(
+        "contributors.html", 
+        {
+            "request": request, 
+            "username": user.username
+        }
+    )
+
+@app.get("/guide", response_class=HTMLResponse)
+def guide_page(request: Request, db: Session = Depends(get_db)):
+    # Check if user is logged in
+    user_id = get_current_user_id(request)
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    
+    # Verify user exists
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user:
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+        
+    return templates.TemplateResponse(
+        "guide.html", 
+        {
+            "request": request, 
+            "username": user.username
+        }
+    )
+        
