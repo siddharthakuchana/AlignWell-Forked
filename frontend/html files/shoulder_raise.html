@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Shoulder Raise | AlignWell{% endblock %}
+
+{% block head %}
+
+<style>
+    .container {
+        width: 85%;
+        margin: auto;
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .image-row {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+
+    .box {
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        padding: 15px;
+        width: 300px;
+    }
+
+    .box img {
+        width: 100%;
+        border-radius: 10px;
+    }
+
+    button {
+        padding: 10px 20px;
+        margin-top: 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Shoulder Raise Guide</h2>
+
+    <div class="image-row">
+        <div class="box">
+            <h4>Correct Posture</h4>
+            <img src="shoulderraise_correct.jpg">
+            <p>Arms lifted with control</p>
+        </div>
+        <div class="box">
+            <h4>Incorrect Posture</h4>
+            <img src="shoulderraise_wrong.jpg">
+            <p>Swinging weights</p>
+        </div>
+    </div>
+
+    <h3>Tips</h3>
+    <p>Soft elbows</p>
+    <p>Light weights</p>
+    <p>Controlled motion</p>
+
+    <button onclick="startShoulderRaise()">Start Webcam</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function startShoulderRaise() {
+        localStorage.setItem("selectedExercise", "shoulderraise");
+        window.location.href = "/detect";
+    }
+</script>
+{% endblock %}

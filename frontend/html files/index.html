@@ -5,21 +5,148 @@
     <meta charset="UTF-8">
     <title>AlignWell</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        /* RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fb 0%, #eef1f7 100%);
+            color: #2d3748;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: #222;
+            color: white;
+            padding: 18px 28px;
+            display: flex;
+            justify-content: center;
+            /* ⬅ horizontal center */
+            align-items: center;
+            /* ⬅ vertical center */
+        }
+
+
+        .brand {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .brand h2 {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        .brand p {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            margin-top: 2px;
+        }
+
+        /* MAIN HERO */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .main-container h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #1a202c;
+        }
+
+        .main-container p {
+            font-size: 1.25rem;
+            color: #4a5568;
+            max-width: 520px;
+            margin-bottom: 36px;
+        }
+
+        /* CTA BUTTON */
+        .cta-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 36px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.35);
+            transition: all 0.25s ease;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.45);
+        }
+
+        .cta-btn a {
+            color: white;
+            text-decoration: none;
+        }
+
+        /* FOOTER NOTE */
+        .footer-note {
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .main-container h1 {
+                font-size: 2.2rem;
+            }
+
+            .main-container p {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
+    <!-- NAVBAR -->
     <nav class="navbar">
-        <h2>AlignWell</h2>
+        <div class="brand">
+            <h2>AlignWell</h2>
+            <p>Your smart posture correction partner</p>
+        </div>
     </nav>
 
+    <!-- HERO -->
     <div class="main-container">
         <h1>Welcome to AlignWell</h1>
-        <p>Improve your gym posture </p>
+        <p>
+            Improve your gym posture with real-time AI feedback and smarter movement tracking.
+        </p>
 
-        <button>
+        <button class="cta-btn">
             <a href="/login">Get Started</a>
         </button>
+
+        <div class="footer-note">
+            Train smart • Move right • Stay injury-free
+        </div>
     </div>
 
 </body>

@@ -1,46 +1,69 @@
 {% extends "base.html" %}
 
-{% block title %}Contributors | AlignWell{% endblock %}
+{% block title %}Guide | AlignWell{% endblock %}
 
 {% block head %}
 
 <style>
-    .navbar {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px 20px;
-        background: #222;
-        color: white;
+    body {
+        background: linear-gradient(135deg, #f5f7fb 0%, #eef1f7 100%);
+        color: #2d3748;
+    }
+
+    h2 {
+        font-weight: 800;
+        color: #2d3748;
+        letter-spacing: 0.5px;
     }
 
     .exercise-container {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 25px;
+        gap: 28px;
         padding: 40px;
+        max-width: 1200px;
+        margin: auto;
     }
 
     .card {
-        border: 1px solid #ccc;
-        border-radius: 12px;
-        padding: 15px;
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
         text-align: center;
         cursor: pointer;
-        transition: 0.3s;
+        transition: all 0.25s ease;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        border: 1px solid #edf2f7;
     }
 
     .card:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        transform: translateY(-6px) scale(1.03);
+        box-shadow: 0 16px 32px rgba(102, 126, 234, 0.25);
+        border-color: #667eea;
     }
 
     .card img {
         width: 100%;
-        height: 140px;
+        height: 150px;
         object-fit: cover;
-        border-radius: 10px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+    }
+
+    .card h3 {
+        margin: 8px 0 4px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2d3748;
+    }
+
+    .card p {
+        font-size: 0.9rem;
+        color: #718096;
+        font-weight: 500;
     }
 </style>
+
 
 {% endblock %}
 
@@ -57,40 +80,40 @@
         <p>Chest & Arms</p>
     </div>
 
-    <div class="card" onclick="window.location.href = '/squats'">
+    <div class="card" onclick="window.location.href = '/squat'">
         <img src="squat.jpg">
         <h3>Squats</h3>
         <p>Leg Strength</p>
     </div>
 
-    <div class="card" onclick=" window.location.href = '/plank'">
-        <img src="plank.jpg">
-        <h3>Plank</h3>
-        <p>Core</p>
+    <div class="card" onclick=" window.location.href = '/bicep_curl'">
+        <img src="bicep_curl.jpg">
+        <h3>Bicep Curls</h3>
+        <p>Biceps</p>
     </div>
 
-    <div class="card" onclick="go('lunges.html')">
-        <img src="lunges.jpg">
-        <h3>Lunges</h3>
-        <p>Lower Body</p>
+    <div class="card" onclick="window.location.href = '/deadlift'">
+        <img src="deadlift.jpg">
+        <h3>Deadlift</h3>
+        <p>Back & Legs</p>
     </div>
 
-    <div class="card" onclick="go('shoulder.html')">
+    <div class="card" onclick="window.location.href = '/shoulder_raise'">
         <img src="shoulder.jpg">
-        <h3>Shoulder Press</h3>
+        <h3>Shoulder Raises</h3>
         <p>Shoulders</p>
     </div>
 
-    <div class="card" onclick="go('crunches.html')">
+    <div class="card" onclick="window.location.href = '/crunches'">
         <img src="crunches.jpg">
         <h3>Crunches</h3>
         <p>Abs</p>
     </div>
 
-    <div class="card" onclick="go('jumpingjacks.html')">
-        <img src="jumping.jpg">
-        <h3>Jumping Jacks</h3>
-        <p>Warm Up</p>
+    <div class="card" onclick="window.location.href = '/bench_press'">
+        <img src="bench_press.jpg">
+        <h3>Bench Press</h3>
+        <p>Chest</p>
     </div>
 
 </div>

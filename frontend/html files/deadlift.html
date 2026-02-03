@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Deadlift | AlignWell{% endblock %}
+
+{% block head %}
+<style>
+    .container {
+        width: 85%;
+        margin: auto;
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .image-row {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+
+    .box {
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        padding: 15px;
+        width: 300px;
+    }
+
+    .box img {
+        width: 100%;
+        border-radius: 10px;
+    }
+
+    button {
+        padding: 10px 20px;
+        margin-top: 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Deadlift Posture Guide</h2>
+
+    <div class="image-row">
+        <div class="box">
+            <h4>Correct Posture</h4>
+            <img src="deadlift_correct.jpg">
+            <p>Neutral spine, hips hinged</p>
+        </div>
+        <div class="box">
+            <h4>Incorrect Posture</h4>
+            <img src="deadlift_wrong.jpg">
+            <p>Rounded back</p>
+        </div>
+    </div>
+
+    <h3>Tips</h3>
+    <p>Brace core</p>
+    <p>Bar close to body</p>
+    <p>Drive through heels</p>
+
+    <button onclick="startDeadLift()">Start Webcam</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function startDeadLift() {
+        localStorage.setItem("selectedExercise", "deadlift");
+        window.location.href = "/detect";
+    }
+</script>
+{% endblock %}

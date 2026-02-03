@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Bench Press | AlignWell{% endblock %}
+
+{% block head %}
+<style>
+    .container {
+        width: 85%;
+        margin: auto;
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .image-row {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+
+    .box {
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        padding: 15px;
+        width: 300px;
+    }
+
+    .box img {
+        width: 100%;
+        border-radius: 10px;
+    }
+
+    button {
+        padding: 10px 20px;
+        margin-top: 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Bench Press Posture Guide</h2>
+
+    <div class="image-row">
+        <div class="box">
+            <h4>Correct Posture</h4>
+            <img src="benchpress_correct.jpg">
+            <p>Feet flat, controlled bar path</p>
+        </div>
+        <div class="box">
+            <h4>Incorrect Posture</h4>
+            <img src="benchpress_wrong.jpg">
+            <p>Elbows flared, unstable feet</p>
+        </div>
+    </div>
+
+    <h3>Tips</h3>
+    <p>Keep shoulder blades tight</p>
+    <p>Lower bar slowly</p>
+    <p>Maintain neutral wrist</p>
+
+    <button onclick="startBenchPress()">Start Webcam</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function startBenchPress() {
+        localStorage.setItem("selectedExercise", "benchpress");
+        window.location.href = "/detect";
+    }
+</script>
+{% endblock %}

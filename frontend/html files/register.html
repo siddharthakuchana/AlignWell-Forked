@@ -2,111 +2,183 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Registration</title>
+    <meta charset="UTF-8">
+    <title>Register | AlignWell</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        /* RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fb 0%, #eef1f7 100%);
+            color: #2d3748;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: #222;
+            color: white;
+            padding: 18px 28px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-center {
+            text-align: center;
+        }
+
+        .nav-center h2 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+
+        .nav-center p {
+            margin: 4px 0 0;
+            font-size: 0.9rem;
+            color: #cbd5e0;
+        }
+
+        /* REGISTER CARD */
+        .register-container {
+            max-width: 420px;
+            margin: 60px auto;
+            background: white;
+            padding: 32px;
+            border-radius: 18px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .register-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+        }
+
+        .register-header p {
+            color: #718096;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e0;
+            font-size: 0.95rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+            transition: transform 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-redirect {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 0.9rem;
+        }
+
+        .login-redirect a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+        }
+    </style>
 </head>
 
-<body class="page page--register">
+<body>
 
-    <main class="main main--register">
-        <section class="register register--section">
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-center">
+            <h2>AlignWell</h2>
+            <p>Your smart posture correction partner</p>
+        </div>
+    </nav>
 
-            <header class="register__header">
-                <h1 class="register__title">Create Account</h1>
-                <p class="register__subtitle">Fill the details to register</p>
-            </header>
+    <!-- REGISTER CARD -->
+    <div class="register-container">
 
-            <!--
-            when the endpoint given in the backend is post, the action is performed according to the backend
-            -->
-            <form class="register__form" action="/register" method="POST" autocomplete="on">
+        <div class="register-header">
+            <h1>Create Account</h1>
+            <p>Fill the details to register</p>
+        </div>
 
-                <!--
-                the message is passed from the backend if the registration is successful
-                -->
-                {% if message %}
-                <div
-                    style="color: green; margin-bottom: 20px; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
-                    {{ message }}
-                </div>
-                {% endif %}
+        {% if error %}
+        <div style="color:red; margin-bottom:12px; text-align:center;">
+            {{ error }}
+        </div>
+        {% endif %}
 
-                <!--
-                the error is passed from the backend if the registration fails
-                -->
-                {% if error %}
-                <div
-                    style="color: red; margin-bottom: 20px; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
-                    {{ error }}
-                </div>
-                {% endif %}
+        <form action="/register" method="POST">
 
-                <!-- Username -->
-                <div class="form__group form__group--username">
-                    <label class="form__label form__label--username" for="username">Username</label>
-                    <!--
-                    the name is the variable where the data is stored(the data typed here is stored in the name variable)
-                    -->
-                    <input class="form__input form__input--username" type="text" id="username" name="username"
-                        placeholder="Choose a username" required />
-                </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" required>
+            </div>
 
-                <!-- Email -->
-                <div class="form__group form__group--email">
-                    <label class="form__label form__label--email" for="email">Email</label>
-                    <input class="form__input form__input--email" type="email" id="email" name="email"
-                        placeholder="Enter your email" required />
-                </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" required>
+            </div>
 
-                <!-- Password -->
-                <div class="form__group form__group--password">
-                    <label class="form__label form__label--password" for="password">Password</label>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <input class="form__input form__input--password" type="password" id="password" name="password"
-                            placeholder="Create a password" required />
-                        <button type="button" onclick="togglePasswordVisibility('password')"
-                            style="padding: 5px 10px; background-color: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            Show
-                        </button>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
 
-                <!-- Submit -->
-                <div class="form__group form__group--submit">
-                    <button class="form__button form__button--submit" type="submit">
-                        Register
-                    </button>
-                </div>
+            <button class="submit-btn" type="submit">Register</button>
 
-                <!-- Login Redirect -->
-                <footer class="register__footer">
-                    <p class="register__text register__text--login">
-                        Already have an account?
-                        <a class="register__link register__link--login" href="/login">Login</a>
-                    </p>
-                </footer>
+        </form>
 
-            </form>
-        </section>
-    </main>
+        <div class="login-redirect">
+            Already have an account?
+            <a href="/login">Login</a>
+        </div>
 
-    <!--
-    this method is to hide and show the password
-    -->
-    <script>
-        function togglePasswordVisibility(fieldId) {
-            const field = document.getElementById(fieldId);
-            const button = event.target;
-            if (field.type === 'password') {
-                field.type = 'text';
-                button.textContent = 'Hide';
-            } else {
-                field.type = 'password';
-                button.textContent = 'Show';
-            }
-        }
-    </script>
+    </div>
 
 </body>
 

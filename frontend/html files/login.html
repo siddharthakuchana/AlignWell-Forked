@@ -3,63 +3,199 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Login | AlignWell</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        /* RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fb 0%, #eef1f7 100%);
+            color: #2d3748;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: #222;
+            color: white;
+            padding: 18px 28px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-center {
+            text-align: center;
+        }
+
+        .nav-center h2 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+
+        .nav-center p {
+            margin-top: 4px;
+            font-size: 0.9rem;
+            color: #cbd5e0;
+        }
+
+        /* LOGIN CARD */
+        .login-container {
+            max-width: 420px;
+            margin: 60px auto;
+            background: white;
+            padding: 32px;
+            border-radius: 18px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .login-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+        }
+
+        .login-header p {
+            color: #718096;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e0;
+            font-size: 0.95rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .password-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .toggle-btn {
+            padding: 10px 14px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .login-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+            transition: transform 0.2s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .register-redirect {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 0.9rem;
+        }
+
+        .register-redirect a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .error-box {
+            color: red;
+            margin-bottom: 14px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 
 <body>
 
-    <div id="page">
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-center">
+            <h2>AlignWell</h2>
+            <p>Your smart posture correction partner</p>
+        </div>
+    </nav>
 
-        <div id="login-container">
+    <!-- LOGIN CARD -->
+    <div class="login-container">
 
-            <div id="login-header">
-                <h2>Login</h2>
+        <div class="login-header">
+            <h2>Welcome Back</h2>
+            <p>Login to continue</p>
+        </div>
+
+        {% if error %}
+        <div class="error-box">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="/login">
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" required>
             </div>
 
-            <div id="login-form">
-                <form method="post" action="/login">
-
-                    <div class="form-group">
-                        <label for="email">Email</label><br>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password">Password</label><br>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="password" id="password" name="password" required style="flex: 1;">
-                            <button type="button" onclick="togglePasswordVisibility('password')"
-                                style="padding: 5px 10px; background-color: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                Show
-                            </button>
-                        </div>
-                    </div>
-
-                    <br>
-
-                    <div class="form-group">
-                        <button type="submit">Login</button>
-                    </div>
-
-                </form>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="password-row">
+                    <input type="password" id="password" name="password" required>
+                    <button type="button" class="toggle-btn"
+                        onclick="togglePasswordVisibility('password')">Show</button>
+                </div>
             </div>
 
-            <div id="login-footer">
-                <p>
-                    Don't have an account?
-                    <a href="/register">Register</a>
-                </p>
-            </div>
+            <button class="login-btn" type="submit">Login</button>
 
-            <!--
-        the error is the value taken from backend if login unsuccessful
-        -->
-            {% if error %}
-            <div id="error-message">
-                <p>{{ error }}</p>
-            </div>
-            {% endif %}
+        </form>
 
+        <div class="register-redirect">
+            Don’t have an account?
+            <a href="/register">Register</a>
         </div>
 
     </div>
@@ -68,6 +204,7 @@
         function togglePasswordVisibility(fieldId) {
             const field = document.getElementById(fieldId);
             const button = event.target;
+
             if (field.type === 'password') {
                 field.type = 'text';
                 button.textContent = 'Hide';
