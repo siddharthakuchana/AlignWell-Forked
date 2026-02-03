@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Pushups | AlignWell{% endblock %}
+{% block title %}Squats | AlignWell{% endblock %}
 
 {% block head %}
 <style>
@@ -42,37 +42,34 @@
 
 {% block content %}
 <div class="container">
-
-    <h2>Push Ups Posture Guide</h2>
+    <h2>Squat Posture Guide</h2>
 
     <div class="image-row">
         <div class="box">
             <h4>Correct Posture</h4>
-            <img src="/static/images/pushup_correct.jpg" alt="Correct Pushup">
-            <p>Body straight, elbows at 45°</p>
+            <img src="squat_correct.jpg">
+            <p>Knees aligned, chest up</p>
         </div>
-
         <div class="box">
             <h4>Incorrect Posture</h4>
-            <img src="/static/images/pushup_wrong.jpg" alt="Wrong Pushup">
-            <p>Back bent, neck dropped</p>
+            <img src="squat_wrong.jpg">
+            <p>Knees collapsing inward</p>
         </div>
     </div>
 
     <h3>Tips</h3>
-    <p>Keep core tight</p>
-    <p>Head aligned with spine</p>
-    <p>Full range of motion</p>
+    <p>Push hips back</p>
+    <p>Heels on floor</p>
+    <p>Engage core</p>
 
-    <button onclick="startPushup()">Start Webcam</button>
-
+    <button onclick="startSquat()">Start Webcam</button>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    function startPushup() {
-        localStorage.setItem("selectedExercise", "pushup");
+    function startSquat() {
+        localStorage.setItem("selectedExercise", "squat");
         window.location.href = "/detect";
     }
 </script>

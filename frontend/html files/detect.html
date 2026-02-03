@@ -259,3 +259,20 @@
     </div>
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script>
+    (function autoSelectExercise() {
+        const exercise = localStorage.getItem("selectedExercise");
+        if (!exercise) return;
+
+        // camera.js is already loaded from base.html
+        if (typeof selectExercise === "function") {
+            selectExercise(exercise);
+            localStorage.removeItem("selectedExercise");
+        } else {
+            setTimeout(autoSelectExercise, 100);
+        }
+    })();
+</script>
+{% endblock %}
