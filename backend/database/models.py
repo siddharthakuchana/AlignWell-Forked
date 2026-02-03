@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
 from .database import Base
 
+#users table created for authentication
 class User(Base):
     __tablename__ = "users"
 

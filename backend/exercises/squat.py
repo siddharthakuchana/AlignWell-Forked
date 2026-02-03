@@ -117,10 +117,9 @@ class SquatTracker:
             left_hip_angle = self.l_hip_filter.apply(left_hip_angle)
             right_hip_angle = self.r_hip_filter.apply(right_hip_angle)
 
-            # ---------------- Practical squat rules ----------------
+
             avg_knee_angle = (left_knee_angle + right_knee_angle) / 2
             
-            # ---------------- CALIBRATION ----------------
             
             # Calibration: Hold steady 'Up' position for ~2 seconds (20 frames)
             if not self.is_calibrated:
@@ -141,13 +140,13 @@ class SquatTracker:
                         "feedback": {"posture": f"Stand steady for {max(0, (20 - self.stable_frames)//10)}s..."},
                         "msg": "Calibrating"
                     }
+    
+            #this checks if the user is in the down position
+            is_down = avg_knee_angle <= 150 
+            #this checks if the user is in the up position
+            is_up = avg_knee_angle >= 155   
 
-            # ---------------- POSITION CHECKS ----------------
-            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
-            is_down = avg_knee_angle <= 150 # Relaxed from 110/120
-            is_up = avg_knee_angle >= 155   # Relaxed from 165
-
-            # Form check for Correct Reps (Keep strict for accuracy)
+            #this checks if the user is in the down position with strict criteria
             is_down_strict = avg_knee_angle <= 110
 
             # Posture check: keep chest up
@@ -167,8 +166,6 @@ class SquatTracker:
             if right_visible:
                 if right_knee[0] > right_ankle[0] + 0.03:
                     knee_cave_ok = False
-
-            # ---------------- Feedback ----------------
 
             self.knee_feedback = "Good depth" if is_down else "Go lower"
             if is_up:

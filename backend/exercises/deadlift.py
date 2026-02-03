@@ -6,7 +6,7 @@ class DeadliftTracker:
         self.correct_reps = 0
         self.total_reps = 0
         self.accuracy = 0
-        self.deadlift_state = "down" # Deadlift starts from the ground usually
+        self.deadlift_state = "down" #Deadlift starts from the ground usually
         self.form_feedback = ""
         self.posture_feedback = ""
         self.knee_feedback = ""
@@ -99,11 +99,10 @@ class DeadliftTracker:
             left_knee_angle = self.l_knee_filter.apply(left_knee_angle)
             right_knee_angle = self.r_knee_filter.apply(right_knee_angle)
 
-            # ---------------- Strict deadlift rules ----------------
-            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
+            #this checks if the user is in the up position
             is_up = (left_hip_angle >= 155 and right_hip_angle >= 155 and
                      left_knee_angle >= 155 and right_knee_angle >= 155)
-            # Relaxed hinge detection for completing the rep
+            #this checks if the user is in the down position
             is_down = left_hip_angle <= 150 and right_hip_angle <= 150
 
             # Form check for Correct Reps (Keep strict for accuracy)
@@ -119,8 +118,6 @@ class DeadliftTracker:
 
             # Symmetry rule: both legs should move similarly
             symmetry_ok = abs(left_knee_angle - right_knee_angle) <= 15 and abs(left_hip_angle - right_hip_angle) <= 15
-
-            # ---------------- Feedback ----------------
 
             if is_up:
                 self.form_feedback = "Good stand"

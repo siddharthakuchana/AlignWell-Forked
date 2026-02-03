@@ -1,24 +1,25 @@
 from angle_utils import calculate_angle, EMAFilter
 
+#bench press tracker class
 class BenchPressTracker:
     #constructor that gives the initial states, feedback and rep count initially set to 0
     def __init__(self):
         self.correct_reps = 0
         self.total_reps = 0
         self.accuracy = 0
-        self.bench_state = "up"  # Usually unrack at top
+        self.bench_state = "up" 
         self.form_feedback = ""
         self.elbow_feedback = ""
 
-        #these variables are used to validate a rep properly (to calculate accuracy)
+        #these are used to validate a rep properly(to calculate the accuracy)
         self.rep_valid = True
         self.hit_bottom = False
 
-        # Calibration / Stable start
+        #calibration variables(ensuing stable start)
         self.is_calibrated = False
         self.stable_frames = 0
         
-        # Filters for smoothing (EMA alpha=0.3)
+        #EMA filters for smoothing the angles caused by jitter
         self.l_elbow_filter = EMAFilter(alpha=0.3)
         self.r_elbow_filter = EMAFilter(alpha=0.3)
 
@@ -88,16 +89,15 @@ class BenchPressTracker:
                     "feedback": {"form": "Body not visible"}
                 }
 
-            # Apply Smoothing
+            #apply EMA filter to smooth the angles
             left_elbow_angle = self.l_elbow_filter.apply(left_elbow_angle)
             right_elbow_angle = self.r_elbow_filter.apply(right_elbow_angle)
             avg_elbow_angle = (left_elbow_angle + right_elbow_angle) / 2
             
-            # ---------------- ORIENTATION & CALIBRATION ----------------
-            
-            # Orientation check: For Bench Press, user MUST be horizontal
+            #this checks if the user is horizontal originally(varies for different exercises)
             is_horizontal = abs(left_shoulder[1] - left_hip[1]) < abs(left_shoulder[0] - left_hip[0])
             
+            #if the user is not horizontal, reset the stable frames and return a message to front end, with a feedback to lay down 
             if not is_horizontal:
                 self.stable_frames = 0
                 return {
@@ -108,15 +108,16 @@ class BenchPressTracker:
                     "msg": "Waiting for proper orientation"
                 }
 
-            # Calibration: Hold steady 'Up' position for ~2 seconds (20 frames)
+            #this checks if the user is in the ready position, wait for 2 seconds to ensure stable start
             if not self.is_calibrated:
-                is_ready_pos = avg_elbow_angle >= 150 # Arms extended
+                is_ready_pos = avg_elbow_angle >= 150
                 
                 if is_ready_pos:
                     self.stable_frames += 1
                 else:
                     self.stable_frames = 0
 
+                #if the user is in ready position for 2 seconds, then the user is calibrated and ready to start 
                 if self.stable_frames >= 20:
                     self.is_calibrated = True
                 else:
@@ -128,15 +129,13 @@ class BenchPressTracker:
                         "msg": "Calibrating"
                     }
 
-            # ---------------- POSITION CHECKS ----------------
-            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
-            is_down = avg_elbow_angle <= 130 # Relaxed from 100/110
-            is_up = avg_elbow_angle >= 145   # Relaxed from 160
+            #this checks if the user is in the down position
+            is_down = avg_elbow_angle <= 130
+            is_up = avg_elbow_angle >= 145
 
-            # Form check for Correct Reps (Keep strict for accuracy)
+            #this checks if the user is in the down position with strict criteria
             is_down_strict = avg_elbow_angle <= 100
 
-            # Extra strict check: too deep (elbow too closed)
             too_deep = left_elbow_angle < 60 or right_elbow_angle < 60
 
             #set the feedback, for elbow angle
@@ -147,12 +146,13 @@ class BenchPressTracker:
             else:
                 self.elbow_feedback = "Full range needed"
 
+            #this checks if the user in up position and gives the form feedback
             if too_deep:
                 self.form_feedback = "Too deep (control the bar)"
             else:
                 self.form_feedback = "Good form"
 
-            #machine state logic
+            #this checks the state of the user's position
             if self.bench_state == "up":
                 # Start moving down (with buffer)
                 if avg_elbow_angle < 145: 
@@ -160,11 +160,12 @@ class BenchPressTracker:
                     self.rep_valid = True
                     self.hit_bottom = False
 
+            #this checks if the user is in the down position
             elif self.bench_state == "down":
                 if is_down_strict:
                     self.hit_bottom = True
 
-                # Record failures mid-rep
+                #this checks if the user is in the up position and gives the form feedback
                 if too_deep:
                     self.rep_valid = False
 
@@ -182,6 +183,7 @@ class BenchPressTracker:
             #calculate accuracy safely (avoid division by zero)
             self.accuracy = (self.correct_reps / self.total_reps) * 100 if self.total_reps > 0 else 0
 
+            #finally return the data to the frontend
             return {
                 "reps": self.correct_reps,
                 "total_reps": self.total_reps,

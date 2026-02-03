@@ -13,7 +13,7 @@ class ShoulderRaiseTracker:
         self.rep_valid = True
         self.hit_top = False
         
-        # Filters for smoothing (EMA alpha=0.3)
+        # Filters for smoothing
         self.l_sh_filter = EMAFilter(alpha=0.3)
         self.r_sh_filter = EMAFilter(alpha=0.3)
 

@@ -64,11 +64,11 @@ class PushupTracker:
             right_knee, v11 = get_landmark(26); 
             right_ankle, v12 = get_landmark(28)
 
-            # Check upper body visibility (Required for counting)
+            # Check upper body visibility 
             left_upper_visible = all(v > 0.4 for v in [v1, v2, v3])
             right_upper_visible = all(v > 0.4 for v in [v7, v8, v9])
             
-            # Check lower body visibility (Optional for form feedback)
+            # Check lower body visibility
             left_lower_visible = all(v > 0.4 for v in [v4, v5, v6])
             right_lower_visible = all(v > 0.4 for v in [v10, v11, v12])
 
@@ -124,8 +124,6 @@ class PushupTracker:
             left_kn_angle = self.l_knee_filter.apply(left_kn_angle)
             right_kn_angle = self.r_knee_filter.apply(right_kn_angle)
 
-            # ---------------- ORIENTATION & CALIBRATION ----------------
-            
             # Orientation check: For pushups, user MUST be horizontal
             # shoulder-to-hip Y difference should be smaller than X difference
             # (In a sitting position, Y difference is large)
@@ -141,9 +139,9 @@ class PushupTracker:
                     "msg": "Waiting for proper orientation"
                 }
 
-            # Calibration: Hold steady 'Up' position for ~2 seconds (20 frames)
+            # Calibration: Hold steady 'Up' position for ~2 seconds
             if not self.is_calibrated:
-                is_ready_pos = avg_eb_angle >= 150 # Mostly straight arms
+                is_ready_pos = avg_eb_angle >= 150 
                 
                 if is_ready_pos:
                     self.stable_frames += 1
@@ -161,12 +159,12 @@ class PushupTracker:
                         "msg": "Calibrating"
                     }
 
-            # ---------------- POSITION CHECKS ----------------
-            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
-            is_down = avg_eb_angle <= 130 # Relaxed from 100/110
-            is_up = avg_eb_angle >= 150   # Relaxed from 160
+            #this checks if the user is in the down position
+            is_down = avg_eb_angle <= 130 
+            #this checks if the user is in the up position
+            is_up = avg_eb_angle >= 150   
             
-            # Form check for Correct Reps (Keep strict for accuracy)
+            #this checks if the user is in the down position with strict criteria
             is_down_strict = avg_eb_angle <= 100
             
             # form checks

@@ -1,5 +1,6 @@
 from .database import SessionLocal
 
+#dependency for database(necessary for sqlalchemy)
 def get_db():
     db = SessionLocal()
     try:

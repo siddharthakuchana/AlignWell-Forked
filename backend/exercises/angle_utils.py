@@ -1,5 +1,6 @@
 import numpy as np
 
+#function to calculate the angle between 3 joints
 def calculate_angle(a, b, c):
     #the keypoints a, b, c are taken as an array of x, y coordinates
     a = np.array(a)
@@ -17,7 +18,7 @@ def calculate_angle(a, b, c):
     return angle
 
 class EMAFilter:
-    """Exponential Moving Average Filter for smoothing jittery signals."""
+    #Exponentially weighted moving average filter to ignore the jitter caused by the skeleton tracking
     def __init__(self, alpha=0.3):
         self.alpha = alpha
         self.smoothed_value = None

@@ -13,7 +13,7 @@ class CrunchesTracker:
         self.rep_valid = True
         self.hit_top = False
         
-        # Filters for smoothing (EMA alpha=0.3)
+        # Filters for smoothing
         self.l_hip_filter = EMAFilter(alpha=0.3)
         self.r_hip_filter = EMAFilter(alpha=0.3)
         self.l_knee_filter = EMAFilter(alpha=0.3)
@@ -110,11 +110,11 @@ class CrunchesTracker:
             # knee should stay bent, so knee angle should not become too straight
             avg_knee_angle = (left_knee_angle + right_knee_angle) / 2
 
-            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
-            is_up = avg_hip_angle <= 120   # Relaxed from 100
-            is_down = avg_hip_angle >= 130  # Keep as is, or slightly relaxed
+            #this checks if the user is in the down position
+            is_up = avg_hip_angle <= 120   
+            is_down = avg_hip_angle >= 130  
             
-            # Form check for Correct Reps (Keep strict)
+            #this checks if the user is in the up position with strict criteria
             is_up_strict = avg_hip_angle <= 95
 
             # Extra strict check: too much movement / wrong detection

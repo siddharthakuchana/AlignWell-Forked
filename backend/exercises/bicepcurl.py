@@ -6,7 +6,7 @@ class BicepCurlTracker:
         self.correct_reps = 0
         self.total_reps = 0
         self.accuracy = 0
-        self.curl_state = "down"  # Arms start extended
+        self.curl_state = "down" 
         self.form_feedback = ""
         self.elbow_feedback = ""
 
@@ -14,7 +14,7 @@ class BicepCurlTracker:
         self.rep_valid = True
         self.hit_top = False
 
-        # Calibration / Stable start
+        #ensures stable start for the user
         self.is_calibrated = False
         self.stable_frames = 0
         
@@ -92,12 +92,10 @@ class BicepCurlTracker:
             left_elbow_angle = self.l_elbow_filter.apply(left_elbow_angle)
             right_elbow_angle = self.r_elbow_filter.apply(right_elbow_angle)
             avg_elbow_angle = (left_elbow_angle + right_elbow_angle) / 2
-
-            # ---------------- CALIBRATION ----------------
             
-            # Calibration: Hold steady 'Down' position (arms relaxed) for ~2 seconds (20 frames)
+            #ensures stable start for the user
             if not self.is_calibrated:
-                is_ready_pos = avg_elbow_angle >= 150 # Arms extended
+                is_ready_pos = avg_elbow_angle >= 150
                 
                 if is_ready_pos:
                     self.stable_frames += 1
@@ -115,12 +113,11 @@ class BicepCurlTracker:
                         "msg": "Calibrating"
                     }
 
-            # ---------------- POSITION CHECKS ----------------
-            # EXTREMELY GENEROUS thresholds for counting (Total Reps)
-            is_up = avg_elbow_angle <= 120   # Relaxed from 70/80
-            is_down = avg_elbow_angle >= 140 # Relaxed from 150/160
+            #this checks if the user is in the down position
+            is_up = avg_elbow_angle <= 120   
+            is_down = avg_elbow_angle >= 140 
             
-            # Form check for Correct Reps (Keep strict for accuracy)
+            #this checks if the user is in the up position with strict criteria
             is_up_strict = avg_elbow_angle <= 75
 
             # Extra strict check: do not over-curl too much (noise / wrong detection)

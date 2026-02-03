@@ -9,29 +9,34 @@ from database.schemas import RegisterResponse, LoginResponse
 from utils import hash_password, verify_password, create_access_token
 from templating import templates
 
+#this is the authentication router
 router = APIRouter()
 
+#renders the register page
 @router.get("/register", response_class=HTMLResponse)
 def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
+#renders the login page
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-
-# --- AUTH API ---
+#this handles the registration of a new user
 @router.post("/register")
 async def register_user(
+    #taken from frontend
     request: Request,
     username: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db)  #taken from database
 ):
+    #this is to handle the content type
     content_type = request.headers.get("content-type", "")
     if "application/json" in content_type:
         try:
+            #this is to handle the json data
             data = await request.json()
             username = data.get("username")
             email = data.get("email")
@@ -39,11 +44,13 @@ async def register_user(
         except:
             pass
 
+    #this is to check if all the fields are filled
     if not username or not email or not password:
         if "application/json" in content_type:
             raise HTTPException(status_code=400, detail="All fields are required")
         return templates.TemplateResponse("register.html", {"request": request, "error": "All fields are required"}, status_code=400)
 
+    #this is to check if the username or email already exists
     existing_user = db.query(User).filter((User.username == username) | (User.email == email)).first()
     if existing_user:
         if "application/json" in content_type:
@@ -77,6 +84,7 @@ async def register_user(
     )
 
 
+#this handles the login of a user
 @router.post("/login")
 async def login_user(
     request: Request,
@@ -84,6 +92,7 @@ async def login_user(
     password: str = Form(...),
     db: Session = Depends(get_db)
 ):
+    #this is to handle the content type
     content_type = request.headers.get("content-type", "")
     if "application/json" in content_type:
         try:
@@ -93,6 +102,7 @@ async def login_user(
         except:
             pass
 
+    #this is to check if the email and password are filled
     if not email or not password:
         if "application/json" in content_type:
             raise HTTPException(status_code=400, detail="Email and password required")
@@ -105,6 +115,7 @@ async def login_user(
             status_code=400
         )
 
+    #this is to check if the user exists
     user = db.query(User).filter(User.email == email).first()
     if not user or not verify_password(password, user.password):
         if "application/json" in content_type:
@@ -118,6 +129,7 @@ async def login_user(
             status_code=400
         )
 
+    #creates the jwt access token for the user for authentication
     access_token = create_access_token(data={"sub": str(user.id), "username": user.username})
 
     if "application/json" in content_type:
@@ -128,7 +140,9 @@ async def login_user(
             access_token=access_token
         )
     
+    #this is to redirect the user to the detect page after successful login
     response = RedirectResponse(url="/detect", status_code=status.HTTP_303_SEE_OTHER)
+    #this is to set the cookie for the user
     response.set_cookie(
         key="access_token", 
         value=f"Bearer {access_token}", 
@@ -138,7 +152,7 @@ async def login_user(
     )
     return response
 
-
+#this handles the logout of a user
 @router.get("/logout")
 def logout():
     response = RedirectResponse(
