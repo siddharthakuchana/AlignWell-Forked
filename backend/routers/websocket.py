@@ -13,26 +13,35 @@ from exercises.crunches import CrunchesTracker
 from exercises.deadlift import DeadliftTracker
 from exercises.shoulderraise import ShoulderRaiseTracker
 
+#websocket router
 router = APIRouter()
 
+#mediapipe pose model
 mp_pose = mp.solutions.pose
 pose_model = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-# --- WEBSOCKET ---
+#websocket endpoint
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    #websocket connection accepted
     await websocket.accept()
     print("✅ Client connected")
     
+    #initialize tracker and current exercise variables
     tracker = None
     current_exercise = None
 
     try:
+        #websocket loop
         while True:
+            #receive data from client
             data = await websocket.receive_text()
             
             try:
+                #parse data
                 msg = json.loads(data)
+
+                #exercise selection
                 if "exercise" in msg:
                     ex = msg["exercise"]
                     current_exercise = ex
@@ -45,7 +54,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     elif ex == "shoulderraise": tracker = ShoulderRaiseTracker()
                     await websocket.send_text(json.dumps({"status": "ready", "message": f"{ex} active"}))
                     continue
-
+                
+                #resets the exercise session
                 if msg.get("action") == "reset" and tracker:
                     if current_exercise == "pushup": tracker = PushupTracker()
                     elif current_exercise == "squat": tracker = SquatTracker()
@@ -61,15 +71,23 @@ async def websocket_endpoint(websocket: WebSocket):
 
             if tracker:
                 try:
+                    #recieve frame data
                     frame_data = data.split(",")[1] if "," in data else data
+                    #decode frame data from base64
                     decoded = base64.b64decode(frame_data)
+                    #convert to numpy array
                     nparr = np.frombuffer(decoded, np.uint8)
+                    #convert to cv2 image
                     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
                     if img is not None:
+                        #convert to rgb to support mediapipe
                         rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                        #process the frame with mediapipe
                         results = pose_model.process(rgb)
+                        #if results contain landmarks send response to the client
                         if results.pose_landmarks:
+                            #send the landmarks as response to the client along with the exercise name
                             response = tracker.process(results.pose_landmarks.landmark)
                             response["landmarks"] = [{"x": lm.x, "y": lm.y} for lm in results.pose_landmarks.landmark]
                             response["exercise"] = current_exercise

@@ -2,7 +2,7 @@ import os
 import sys
 from dotenv import load_dotenv
 
-# --- PATH SETUP ---
+#path set up of main file and exercises folder
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXERCISES_DIR = os.path.join(BASE_DIR, "exercises")
 if BASE_DIR not in sys.path:
@@ -23,10 +23,10 @@ from database.database import Base, engine
 from templating import templates
 from routers import authentication, display_pages, exercise_guide, websocket
 
-# --- APP SETUP ---
+#app setup
 app = FastAPI()
 
-# Allow CORS
+#allow cors middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -35,20 +35,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Static and Templates
+#mount static and templates
 app.mount("/scripts", StaticFiles(directory=os.path.join(BASE_DIR, "..", "frontend", "scripts")), name="scripts")
 
-# Include Routers
+#include the routes from the routers folder
 app.include_router(authentication.router)
 app.include_router(display_pages.router)
 app.include_router(exercise_guide.router)
 app.include_router(websocket.router)
 
+#database setup
 @app.on_event("startup")
 def startup_event():
     Base.metadata.create_all(bind=engine)
 
-# --- HTML ROUTES ---
+#render the index.html page
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})

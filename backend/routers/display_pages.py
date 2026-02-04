@@ -7,8 +7,10 @@ from database.models import User
 from utils import get_current_user_id
 from templating import templates
 
+#display pages router
 router = APIRouter()
 
+#renders the detect.html page
 @router.get("/detect", response_class=HTMLResponse)
 def detect_page(request: Request, db: Session = Depends(get_db)):
     # Check if user is logged in
@@ -29,6 +31,7 @@ def detect_page(request: Request, db: Session = Depends(get_db)):
         }
     )
 
+#renders the guide.html page
 @router.get("/guide", response_class=HTMLResponse)
 def guide_page(request: Request, db: Session = Depends(get_db)):
     # Check if user is logged in
@@ -49,6 +52,7 @@ def guide_page(request: Request, db: Session = Depends(get_db)):
         }
     )
 
+#renders the contributors.html page
 @router.get("/contributors", response_class=HTMLResponse)
 def contributors(request: Request, db: Session = Depends(get_db)):
     # Check if user is logged in

@@ -7,8 +7,10 @@ from database.models import User
 from utils import get_current_user_id
 from templating import templates
 
+#exercise guide router
 router = APIRouter()
 
+#renders the pushup.html page
 @router.get("/pushup", response_class=HTMLResponse)
 def pushup_page(request: Request, db: Session = Depends(get_db)):
     # Check if user is logged in
@@ -29,6 +31,7 @@ def pushup_page(request: Request, db: Session = Depends(get_db)):
         }
     )
 
+#renders the squat.html page
 @router.get("/squat", response_class=HTMLResponse)
 def squat_page(request: Request, db: Session = Depends(get_db)):
     # Check if user is logged in
@@ -49,6 +52,7 @@ def squat_page(request: Request, db: Session = Depends(get_db)):
         }
     )
 
+#renders the shoulder_raise.html page
 @router.get("/shoulder_raise", response_class=HTMLResponse)
 def shoulderraise_page(request: Request, db: Session = Depends(get_db)):
     # Check if user is logged in
@@ -69,6 +73,7 @@ def shoulderraise_page(request: Request, db: Session = Depends(get_db)):
         }
     )
 
+#renders the bicep_curl.html page
 @router.get("/bicep_curl", response_class=HTMLResponse)
 def bicepcurl_page(request: Request, db: Session = Depends(get_db)):
     # Check if user is logged in
@@ -89,6 +94,7 @@ def bicepcurl_page(request: Request, db: Session = Depends(get_db)):
         }
     )
 
+#renders the bench_press.html page
 @router.get("/bench_press", response_class=HTMLResponse)
 def benchpress_page(request: Request, db: Session = Depends(get_db)):
     # Check if user is logged in
@@ -109,6 +115,7 @@ def benchpress_page(request: Request, db: Session = Depends(get_db)):
         }
     )
 
+#renders the deadlift.html page
 @router.get("/deadlift", response_class=HTMLResponse)
 def deadlift_page(request: Request, db: Session = Depends(get_db)):
     # Check if user is logged in
@@ -129,6 +136,7 @@ def deadlift_page(request: Request, db: Session = Depends(get_db)):
         }
     )
 
+#renders the crunches.html page
 @router.get('/crunches', response_class=HTMLResponse)
 def crunches_page(request: Request, db: Session = Depends(get_db)):
     # Check if user is logged in
