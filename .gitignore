@@ -1,5 +1,6 @@
-# --- Python ---
-__pycache__/
+# ---------------- PYTHON ----------------
+
+**pycache**/
 *.py[cod]
 *$py.class
 .pytest_cache/
@@ -10,20 +11,34 @@ build/
 *.egg-info/
 .python-version
 
-# --- Virtual Environment ---
+# ---------------- VIRTUAL ENV ----------------
+
 venv/
 env/
-.env
 .venv/
 ENV/
 
-# --- Logs and Databases ---
-*.log
+# ---------------- ENV FILES (IMPORTANT 🔐) ----------------
+
+.env
+
+# ---------------- DATABASE ----------------
+
 *.sqlite
 *.db
-backend/database/alembic/versions/__pycache__/
+*.sqlite3
+backend/database/alembic/versions/**pycache**/
 
-# --- IDEs / Editors ---
+# ---------------- LOGS ----------------
+
+*.log
+
+# ---------------- CERTIFICATES (SECURITY) ----------------
+
+backend/CERTS/
+
+# ---------------- IDE / EDITORS ----------------
+
 .vscode/
 .idea/
 *.swp
@@ -33,7 +48,8 @@ backend/database/alembic/versions/__pycache__/
 .pydevproject
 .settings/
 
-# --- OS Specific ---
+# ---------------- OS FILES ----------------
+
 .DS_Store
 .DS_Store?
 ._*
@@ -42,7 +58,8 @@ backend/database/alembic/versions/__pycache__/
 ehthumbs.db
 Thumbs.db
 
-# --- Frontend & Node ---
+# ---------------- FRONTEND / NODE ----------------
+
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -53,7 +70,16 @@ out/
 .cache/
 .parcel-cache/
 
-# --- Misc ---
+# ---------------- MISC ----------------
+
 *.bak
 *.tmp
 *.temp
+
+# ---------------- OPTIONAL ----------------
+
+# Uncomment if needed
+
+# uploads/
+
+# media/
