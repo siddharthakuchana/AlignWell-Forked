@@ -58,7 +58,7 @@ AlignWell/
 ## ⚙️ Setup Instructions
 
 1. Clone repo  
-git clone https://github.com/your-username/alignwell.git  
+git clone https://github.com/Prithvi-Siddharth/alignwell.git  
 
 2. Go to backend  
 cd backend  
