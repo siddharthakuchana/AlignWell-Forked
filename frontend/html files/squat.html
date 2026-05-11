@@ -2,67 +2,38 @@
 
 {% block title %}Squats | AlignWell{% endblock %}
 
-{% block head %}
-<style>
-    .container {
-        width: 85%;
-        margin: auto;
-        margin-top: 30px;
-        text-align: center;
-    }
-
-    .image-row {
-        display: flex;
-        justify-content: center;
-        gap: 40px;
-        margin-top: 30px;
-        flex-wrap: wrap;
-    }
-
-    .box {
-        border: 1px solid #ccc;
-        border-radius: 12px;
-        padding: 15px;
-        width: 300px;
-    }
-
-    .box img {
-        width: 100%;
-        border-radius: 10px;
-    }
-
-    button {
-        padding: 10px 20px;
-        margin-top: 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container">
-    <h2>Squat Posture Guide</h2>
+<div class="guide-container">
+    <h2 class="guide-title">Squat Posture Guide</h2>
 
-    <div class="image-row">
-        <div class="box">
+    <div class="guide-row">
+        <div class="guide-box">
             <h4>Correct Posture</h4>
-            <img src="/static/images/squatcorrect.jpeg">
+            <img src="/static/images/squatcorrect.jpeg" alt="Correct Squat">
             <p>Knees aligned, chest up</p>
         </div>
-        <div class="box">
+        <div class="guide-box">
             <h4>Incorrect Posture</h4>
-            <img src="/static/images/squatwrong.jpeg">
+            <img src="/static/images/squatwrong.jpeg" alt="Wrong Squat">
             <p>Knees collapsing inward</p>
         </div>
     </div>
 
-    <h3>Tips</h3>
-    <p>Push hips back</p>
-    <p>Heels on floor</p>
-    <p>Engage core</p>
+    <div class="tips-card">
+        <h3>Pro Tips for Perfect Form</h3>
+        <ul class="tips-list">
+            <li>Push hips back</li>
+            <li>Heels firmly on floor</li>
+            <li>Engage core muscles</li>
+            <li>Weight on your heels</li>
+        </ul>
+    </div>
 
-    <button onclick="startSquat()">Start Webcam</button>
+    <div class="guide-action">
+        <button class="btn btn-primary" onclick="startSquat()" style="padding: 16px 40px; font-size: 1.1rem;">
+            Start Squat Session
+        </button>
+    </div>
 </div>
 {% endblock %}
 

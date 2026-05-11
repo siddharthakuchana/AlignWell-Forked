@@ -4,87 +4,142 @@
 
 {% block head %}
 <style>
-    body {
-        background: linear-gradient(135deg, #f5f7fb 0%, #eef1f7 100%);
-        color: #2d3748;
-    }
-
     h2 {
         font-weight: 800;
-        color: #2d3748;
+        color: var(--text-main);
         letter-spacing: 0.5px;
     }
 
     .team-container {
         display: flex;
         justify-content: center;
-        gap: 36px;
+        gap: 32px;
         margin: 50px auto;
         flex-wrap: wrap;
-        max-width: 1000px;
+        max-width: 1200px;
         padding: 0 20px;
     }
 
     .member-card {
-        width: 230px;
-        background: white;
-        border-radius: 18px;
+        width: 300px;
+        background: var(--card-bg);
+        border-radius: 24px;
         text-align: center;
-        padding: 22px 16px;
+        padding: 32px 24px;
         cursor: pointer;
-        transition: all 0.25s ease;
-        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
-        border: 1px solid #edf2f7;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        position: relative;
+        overflow: hidden;
     }
 
     .member-card:hover {
-        transform: translateY(-6px) scale(1.04);
-        box-shadow: 0 18px 36px rgba(102, 126, 234, 0.25);
-        border-color: #667eea;
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.25);
+    }
+
+    /* INFO BUTTON */
+    .info-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 24px;
+        height: 24px;
+        background: var(--accent);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 800;
+        cursor: pointer;
+        z-index: 10;
+        transition: transform 0.2s;
+        border: none;
+    }
+
+    .info-btn:hover {
+        transform: scale(1.2);
+        background: var(--accent-hover);
     }
 
     .member-card img {
-        width: 120px;
-        height: 120px;
+        width: 110px;
+        height: 110px;
         border-radius: 50%;
         object-fit: cover;
         object-position: center top;
         margin-bottom: 14px;
-        border: 4px solid #edf2f7;
-        transition: border 0.25s ease;
-    }
-
-    /* Fix only 3rd image alignment */
-    .member3-img {
-        transform: translateY(-8px);
+        border: 4px solid var(--border);
+        transition: all 0.3s ease;
     }
 
     .member-card:hover img {
-        border-color: #667eea;
+        border-color: var(--accent);
+        transform: scale(1.05);
     }
 
     .member-card h4 {
         margin: 8px 0 4px;
-        font-size: 1.05rem;
+        font-size: 1.1rem;
         font-weight: 700;
-        color: #2d3748;
+        color: var(--text-main);
     }
 
     .desc {
-        color: #718096;
+        color: var(--text-muted);
         font-size: 0.9rem;
         font-weight: 500;
+        margin-bottom: 12px;
+    }
+
+    /* EXPANDABLE SECTION */
+    .expanded-info {
+        max-height: 0;
+        overflow-y: hidden;
+        transition: max-height 0.6s ease, padding 0.5s ease;
+        text-align: left;
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 12px;
+        margin-top: 10px;
+        font-size: 0.85rem;
+        color: var(--text-main);
+        line-height: 1.5;
+    }
+
+    .member-card.is-expanded .expanded-info {
+        max-height: 350px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        overflow-y: auto;
+    }
+
+    /* Custom scrollbar for expanded info */
+    .expanded-info::-webkit-scrollbar {
+        width: 4px;
+    }
+    .expanded-info::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .expanded-info::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 10px;
     }
 
     .email {
-        font-size: 0.85rem;
-        color: #4a5568;
-        margin-top: 6px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 12px;
+        border-top: 1px solid var(--border);
+        padding-top: 8px;
     }
 
     .email a {
         text-decoration: none;
-        color: #667eea;
+        color: var(--accent);
+        word-break: break-all;
     }
 
     .email a:hover {
@@ -95,6 +150,11 @@
 <script>
     function openProfile(url) {
         window.open(url, "_blank");
+    }
+
+    function toggleExpand(event, element) {
+        event.stopPropagation();
+        element.closest('.member-card').classList.toggle('is-expanded');
     }
 </script>
 
@@ -108,9 +168,15 @@
 
     <!-- MEMBER 1 -->
     <div class="member-card" onclick="openProfile('https://www.linkedin.com/in/prithvi-manepalli-32488a321')">
+        <button class="info-btn" onclick="toggleExpand(event, this)">i</button>
         <img src="/static/images/image1.jpg" alt="Member 1">
         <h4>PRITHVI M</h4>
-        <p class="desc">AI Engineer <br> Computer Vision</p>
+        <p class="desc">Computer Vision Lead <br> Backend Engineer</p>
+        
+        <div class="expanded-info">
+            Lead Computer Vision engineer and Backend architect. Prithvi developed the core real-time tracking engine and synchronized it with a high-performance backend infrastructure. By bridging the gap between advanced CV models and scalable server-side logic, he ensured that AlignWell provides seamless, low-latency form analysis for all fitness enthusiasts.
+        </div>
+
         <p class="email">
             <a href="mailto:prithvisd.6@gmail.com" onclick="event.stopPropagation();">
                 prithvisd.6@gmail.com
@@ -120,9 +186,15 @@
 
     <!-- MEMBER 2 -->
     <div class="member-card" onclick="openProfile('https://www.linkedin.com/in/siddharthakuchana')">
+        <button class="info-btn" onclick="toggleExpand(event, this)">i</button>
         <img src="/static/images/image2.jpeg" alt="Member 2">
         <h4>SIDDHARTHA K</h4>
-        <p class="desc">Frontend Developer <br> Client-Side Engineer</p>
+        <p class="desc">Frontend Architect <br> UI/UX Specialist</p>
+
+        <div class="expanded-info">
+            Siddhartha is the architect behind AlignWell's premium user experience. He developed the dynamic multi-theme system, responsive layouts, and the custom component library. By leveraging modern CSS and JavaScript patterns, he transformed complex tracking data into a clean, intuitive, and high-performance interface that "wows" users at first glance.
+        </div>
+
         <p class="email">
             <a href="mailto:siddharthakuchana0207@gmail.com" onclick="event.stopPropagation();">
                 siddharthakuchana0207@gmail.com
@@ -132,9 +204,15 @@
 
     <!-- MEMBER 3 -->
     <div class="member-card" onclick="openProfile('https://www.linkedin.com/in/siddharth-gogireddy-67b427298')">
-        <img src="/static/images/image3.jpeg" class="member3-img" alt="Member 3">
+        <button class="info-btn" onclick="toggleExpand(event, this)">i</button>
+        <img src="/static/images/image3.jpeg" class="member3-img" alt="Member 3" style="transform: translateY(-8px);">
         <h4>SIDDHARTH G</h4>
-        <p class="desc"> QA Engineer <br> Backend Dev</p>
+        <p class="desc">Backend Systems <br> Quality Assurance</p>
+
+        <div class="expanded-info">
+            Siddharth manages the robust infrastructure of AlignWell. He engineered the FastAPI backend, integrated the MySQL database systems with SSL security, and built the high-speed WebSocket pipeline for real-time video processing. His rigorous QA standards and full-stack expertise ensure that the application is stable, secure, and scalable.
+        </div>
+
         <p class="email">
             <a href="mailto:siddharthgogireddy@gmail.com" onclick="event.stopPropagation();">
                 siddharthgogireddy@gmail.com

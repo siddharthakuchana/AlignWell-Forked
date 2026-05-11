@@ -2,67 +2,38 @@
 
 {% block title %}Bench Press | AlignWell{% endblock %}
 
-{% block head %}
-<style>
-    .container {
-        width: 85%;
-        margin: auto;
-        margin-top: 30px;
-        text-align: center;
-    }
-
-    .image-row {
-        display: flex;
-        justify-content: center;
-        gap: 40px;
-        margin-top: 30px;
-        flex-wrap: wrap;
-    }
-
-    .box {
-        border: 1px solid #ccc;
-        border-radius: 12px;
-        padding: 15px;
-        width: 300px;
-    }
-
-    .box img {
-        width: 100%;
-        border-radius: 10px;
-    }
-
-    button {
-        padding: 10px 20px;
-        margin-top: 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container">
-    <h2>Bench Press Posture Guide</h2>
+<div class="guide-container">
+    <h2 class="guide-title">Bench Press Posture Guide</h2>
 
-    <div class="image-row">
-        <div class="box">
+    <div class="guide-row">
+        <div class="guide-box">
             <h4>Correct Posture</h4>
-            <img src="/static/images/benchpresscorrect.jpeg">
-            <p>Feet flat, controlled bar path</p>
+            <img src="/static/images/benchpresscorrect.jpeg" alt="Correct Bench Press">
+            <p>Back arched slightly, feet flat</p>
         </div>
-        <div class="box">
+        <div class="guide-box">
             <h4>Incorrect Posture</h4>
-            <img src="/static/images/benchpresswrong.jpeg">
-            <p>Elbows flared, unstable feet</p>
+            <img src="/static/images/benchpresswrong.jpeg" alt="Wrong Bench Press">
+            <p>Feet off floor, bouncing bar</p>
         </div>
     </div>
 
-    <h3>Tips</h3>
-    <p>Keep shoulder blades tight</p>
-    <p>Lower bar slowly</p>
-    <p>Maintain neutral wrist</p>
+    <div class="tips-card">
+        <h3>Pro Tips for Perfect Form</h3>
+        <ul class="tips-list">
+            <li>Keep feet flat on floor</li>
+            <li>Bar to mid-chest</li>
+            <li>Elbows at 45 degrees</li>
+            <li>Retract shoulder blades</li>
+        </ul>
+    </div>
 
-    <button onclick="startBenchPress()">Start Webcam</button>
+    <div class="guide-action">
+        <button class="btn btn-primary" onclick="startBenchPress()" style="padding: 16px 40px; font-size: 1.1rem;">
+            Start Bench Press Session
+        </button>
+    </div>
 </div>
 {% endblock %}
 

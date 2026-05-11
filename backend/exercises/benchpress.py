@@ -52,11 +52,13 @@ class BenchPressTracker:
             left_shoulder, v1 = get_landmark(11)
             left_elbow, v2 = get_landmark(13)
             left_wrist, v3 = get_landmark(15)
+            left_hip, v10 = get_landmark(23)
 
             # Right side landmarks are calculated
             right_shoulder, v4 = get_landmark(12)
             right_elbow, v5 = get_landmark(14)
             right_wrist, v6 = get_landmark(16)
+            right_hip, v11 = get_landmark(24)
 
             #check the visibility scores to see if the that side(left/right) is visible 
             left_visible = all(v > 0.6 for v in [v1, v2, v3])

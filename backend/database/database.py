@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Get env variables
-USERNAME = os.getenv("DB_USERNAME")
+USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 HOST = os.getenv("HOST")
 PORT = os.getenv("PORT")
@@ -29,7 +29,7 @@ engine = create_engine(
     echo=False,
     connect_args={
         "ssl": {
-            "ssl_ca": "D:/Project/AlignWell/backend/CERTS/isrgrootx1.pem"
+            "ssl_ca": os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "CERTS", "isrgrootx1.pem")
         }
     }
 )

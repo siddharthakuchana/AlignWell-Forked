@@ -17,14 +17,18 @@ if EXERCISES_DIR not in sys.path:
 load_dotenv()
 
 # ---------------- IMPORTS ----------------
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
 
 from database.database import Base, engine
+from database.dependencies import get_db
+from database.models import User
 from templating import templates
 from routers import authentication, display_pages, exercise_guide, websocket
+from utils import get_current_user_id
 
 # ---------------- APP SETUP ----------------
 app = FastAPI()
@@ -45,7 +49,6 @@ app.mount(
     name="scripts"
 )
 
-# ✅ ADD THIS
 app.mount(
     "/static",
     StaticFiles(directory=os.path.join(BASE_DIR, "..", "frontend", "static")),
@@ -58,17 +61,18 @@ app.include_router(display_pages.router)
 app.include_router(exercise_guide.router)
 app.include_router(websocket.router)
 
-# ---------------- DATABASE SETUP ----------------
 @app.on_event("startup")
 def startup_event():
-    # ❌ COMMENT THIS
-    # Base.metadata.create_all(bind=engine)
-    print("Startup done without DB")
+    # Create tables if they don't exist
+    Base.metadata.create_all(bind=engine)
+    print("Startup: Database tables verified/created")
+
 # ---------------- INIT DB ----------------
 @app.get("/init-db")
 def init_db():
     Base.metadata.create_all(bind=engine)
     return {"msg": "Database initialized"}
+
 # ---------------- DB TEST ----------------
 @app.get("/db-test")
 def db_test():

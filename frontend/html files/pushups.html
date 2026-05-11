@@ -2,70 +2,39 @@
 
 {% block title %}Pushups | AlignWell{% endblock %}
 
-{% block head %}
-<style>
-    .container {
-        width: 85%;
-        margin: auto;
-        margin-top: 30px;
-        text-align: center;
-    }
-
-    .image-row {
-        display: flex;
-        justify-content: center;
-        gap: 40px;
-        margin-top: 30px;
-        flex-wrap: wrap;
-    }
-
-    .box {
-        border: 1px solid #ccc;
-        border-radius: 12px;
-        padding: 15px;
-        width: 300px;
-    }
-
-    .box img {
-        width: 100%;
-        border-radius: 10px;
-    }
-
-    button {
-        padding: 10px 20px;
-        margin-top: 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container">
+<div class="guide-container">
+    <h2 class="guide-title">Push Ups Posture Guide</h2>
 
-    <h2>Push Ups Posture Guide</h2>
-
-    <div class="image-row">
-        <div class="box">
+    <div class="guide-row">
+        <div class="guide-box">
             <h4>Correct Posture</h4>
             <img src="/static/images/pushupcorrect.jpeg" alt="Correct Pushup">
             <p>Body straight, elbows at 45°</p>
         </div>
 
-        <div class="box">
+        <div class="guide-box">
             <h4>Incorrect Posture</h4>
             <img src="/static/images/pushupwrong.jpeg" alt="Wrong Pushup">
             <p>Back bent, neck dropped</p>
         </div>
     </div>
 
-    <h3>Tips</h3>
-    <p>Keep core tight</p>
-    <p>Head aligned with spine</p>
-    <p>Full range of motion</p>
+    <div class="tips-card">
+        <h3>Pro Tips for Perfect Form</h3>
+        <ul class="tips-list">
+            <li>Keep core tight</li>
+            <li>Head aligned with spine</li>
+            <li>Full range of motion</li>
+            <li>Inhale down, exhale up</li>
+        </ul>
+    </div>
 
-    <button onclick="startPushup()">Start Webcam</button>
-
+    <div class="guide-action">
+        <button class="btn btn-primary" onclick="startPushup()" style="padding: 16px 40px; font-size: 1.1rem;">
+            Start Pushup Session
+        </button>
+    </div>
 </div>
 {% endblock %}
 

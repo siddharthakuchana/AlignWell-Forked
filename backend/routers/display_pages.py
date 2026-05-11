@@ -54,21 +54,19 @@ def guide_page(request: Request, db: Session = Depends(get_db)):
 
 #renders the contributors.html page
 @router.get("/contributors", response_class=HTMLResponse)
-def contributors(request: Request, db: Session = Depends(get_db)):
-    # Check if user is logged in
+def creators_page(request: Request, db: Session = Depends(get_db)):
+    # Try to get user info if logged in (for navbar "Hi, username")
     user_id = get_current_user_id(request)
-    if not user_id:
-        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    
-    # Verify user exists
-    user = db.query(User).filter(User.id == int(user_id)).first()
-    if not user:
-        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    username = None
+    if user_id:
+        user = db.query(User).filter(User.id == int(user_id)).first()
+        if user:
+            username = user.username
         
     return templates.TemplateResponse(
         "contributors.html", 
         {
             "request": request, 
-            "username": user.username
+            "username": username
         }
     )

@@ -2,73 +2,44 @@
 
 {% block title %}Deadlift | AlignWell{% endblock %}
 
-{% block head %}
-<style>
-    .container {
-        width: 85%;
-        margin: auto;
-        margin-top: 30px;
-        text-align: center;
-    }
-
-    .image-row {
-        display: flex;
-        justify-content: center;
-        gap: 40px;
-        margin-top: 30px;
-        flex-wrap: wrap;
-    }
-
-    .box {
-        border: 1px solid #ccc;
-        border-radius: 12px;
-        padding: 15px;
-        width: 300px;
-    }
-
-    .box img {
-        width: 100%;
-        border-radius: 10px;
-    }
-
-    button {
-        padding: 10px 20px;
-        margin-top: 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container">
-    <h2>Deadlift Posture Guide</h2>
+<div class="guide-container">
+    <h2 class="guide-title">Deadlift Posture Guide</h2>
 
-    <div class="image-row">
-        <div class="box">
+    <div class="guide-row">
+        <div class="guide-box">
             <h4>Correct Posture</h4>
-            <img src="/static/images/deadliftcorrect.jpeg">
-            <p>Neutral spine, hips hinged</p>
+            <img src="/static/images/deadliftcorrect.jpeg" alt="Correct Deadlift">
+            <p>Flat back, bar close to shins</p>
         </div>
-        <div class="box">
+        <div class="guide-box">
             <h4>Incorrect Posture</h4>
-            <img src="/static/images/deadliftwrong.jpeg">
-            <p>Rounded back</p>
+            <img src="/static/images/deadliftwrong.jpeg" alt="Wrong Deadlift">
+            <p>Rounded back, bar too far</p>
         </div>
     </div>
 
-    <h3>Tips</h3>
-    <p>Brace core</p>
-    <p>Bar close to body</p>
-    <p>Drive through heels</p>
+    <div class="tips-card">
+        <h3>Pro Tips for Perfect Form</h3>
+        <ul class="tips-list">
+            <li>Keep back flat (neutral spine)</li>
+            <li>Drive through your heels</li>
+            <li>Bar should stay close to body</li>
+            <li>Hinge at the hips</li>
+        </ul>
+    </div>
 
-    <button onclick="startDeadLift()">Start Webcam</button>
+    <div class="guide-action">
+        <button class="btn btn-primary" onclick="startDeadlift()" style="padding: 16px 40px; font-size: 1.1rem;">
+            Start Deadlift Session
+        </button>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    function startDeadLift() {
+    function startDeadlift() {
         localStorage.setItem("selectedExercise", "deadlift");
         window.location.href = "/detect";
     }

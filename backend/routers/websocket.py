@@ -16,13 +16,13 @@ from exercises.shoulderraise import ShoulderRaiseTracker
 #websocket router
 router = APIRouter()
 
-#mediapipe pose model
-mp_pose = mp.solutions.pose
-pose_model = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
-
 #websocket endpoint
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    # Initialize mediapipe pose model for this connection
+    mp_pose = mp.solutions.pose
+    pose_model = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+    
     #websocket connection accepted
     await websocket.accept()
     print("✅ Client connected")
@@ -37,9 +37,11 @@ async def websocket_endpoint(websocket: WebSocket):
             #receive data from client
             data = await websocket.receive_text()
             
+            is_json = False
             try:
                 #parse data
                 msg = json.loads(data)
+                is_json = True
 
                 #exercise selection
                 if "exercise" in msg:
@@ -69,7 +71,7 @@ async def websocket_endpoint(websocket: WebSocket):
             except:
                 pass
 
-            if tracker:
+            if tracker and not is_json:
                 try:
                     #recieve frame data
                     frame_data = data.split(",")[1] if "," in data else data

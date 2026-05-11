@@ -2,67 +2,38 @@
 
 {% block title %}Crunches | AlignWell{% endblock %}
 
-{% block head %}
-<style>
-    .container {
-        width: 85%;
-        margin: auto;
-        margin-top: 30px;
-        text-align: center;
-    }
-
-    .image-row {
-        display: flex;
-        justify-content: center;
-        gap: 40px;
-        margin-top: 30px;
-        flex-wrap: wrap;
-    }
-
-    .box {
-        border: 1px solid #ccc;
-        border-radius: 12px;
-        padding: 15px;
-        width: 300px;
-    }
-
-    .box img {
-        width: 100%;
-        border-radius: 10px;
-    }
-
-    button {
-        padding: 10px 20px;
-        margin-top: 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container">
-    <h2>Crunches Posture Guide</h2>
+<div class="guide-container">
+    <h2 class="guide-title">Crunches Posture Guide</h2>
 
-    <div class="image-row">
-        <div class="box">
+    <div class="guide-row">
+        <div class="guide-box">
             <h4>Correct Posture</h4>
-            <img src="/static/images/crunchescorrect.jpeg">
-            <p>Lift shoulders, not neck</p>
+            <img src="/static/images/crunchescorrect.jpeg" alt="Correct Crunches">
+            <p>Lower back on floor, chin up</p>
         </div>
-        <div class="box">
+        <div class="guide-box">
             <h4>Incorrect Posture</h4>
-            <img src="/static/images/cruncheswrong.jpeg">
-            <p>Pulling head forward</p>
+            <img src="/static/images/cruncheswrong.jpeg" alt="Wrong Crunches">
+            <p>Pulling on neck, arching back</p>
         </div>
     </div>
 
-    <h3>Tips</h3>
-    <p>Exhale while lifting</p>
-    <p>Slow controlled reps</p>
-    <p>Engage abs</p>
+    <div class="tips-card">
+        <h3>Pro Tips for Perfect Form</h3>
+        <ul class="tips-list">
+            <li>Lower back stays on mat</li>
+            <li>Don't pull on your neck</li>
+            <li>Exhale as you crunch up</li>
+            <li>Control the movement</li>
+        </ul>
+    </div>
 
-    <button onclick="startCrunches()">Start Webcam</button>
+    <div class="guide-action">
+        <button class="btn btn-primary" onclick="startCrunches()" style="padding: 16px 40px; font-size: 1.1rem;">
+            Start Crunches Session
+        </button>
+    </div>
 </div>
 {% endblock %}
 

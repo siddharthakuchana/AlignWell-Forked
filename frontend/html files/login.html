@@ -1,220 +1,175 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Login | AlignWell</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block title %}Login | AlignWell{% endblock %}
 
-    <style>
-        /* RESET */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        }
+{% block head %}
+<style>
+    /* LOGIN CARD */
+    .login-container {
+        max-width: 420px;
+        margin: 60px auto;
+        background: var(--card-bg);
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+    }
 
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fb 0%, #eef1f7 100%);
-            color: #2d3748;
-        }
+    .login-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
 
-        /* NAVBAR */
-        .navbar {
-            background: #222;
-            color: white;
-            padding: 18px 28px;
-            display: flex;
-            justify-content: center;
-        }
+    .login-header h2 {
+        font-size: 2rem;
+        margin-bottom: 8px;
+        color: var(--text-main);
+    }
 
-        .nav-center {
-            text-align: center;
-        }
+    .login-header p {
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
 
-        .nav-center h2 {
-            margin: 0;
-            font-size: 1.6rem;
-            font-weight: 800;
-        }
+    .form-group {
+        margin-bottom: 24px;
+    }
 
-        .nav-center p {
-            margin-top: 4px;
-            font-size: 0.9rem;
-            color: #cbd5e0;
-        }
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-main);
+    }
 
-        /* LOGIN CARD */
-        .login-container {
-            max-width: 420px;
-            margin: 60px auto;
-            background: white;
-            padding: 32px;
-            border-radius: 18px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-        }
+    input {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        font-size: 1rem;
+        background: var(--bg-gradient);
+        color: var(--text-main);
+        outline: none;
+        transition: border-color 0.2s;
+    }
 
-        .login-header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
+    input:focus {
+        border-color: var(--accent);
+    }
 
-        .login-header h2 {
-            font-size: 1.8rem;
-            margin-bottom: 6px;
-        }
+    .password-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
 
-        .login-header p {
-            color: #718096;
-            font-size: 0.95rem;
-        }
+    .toggle-btn {
+        padding: 10px 16px;
+        background-color: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
 
-        .form-group {
-            margin-bottom: 18px;
-        }
+    .login-btn {
+        width: 100%;
+        margin-top: 12px;
+        padding: 16px;
+        background: var(--accent);
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 16px;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
 
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
+    .login-btn:hover {
+        transform: translateY(-2px);
+        background: var(--accent-hover);
+        box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+    }
 
-        input {
-            width: 100%;
-            padding: 12px 14px;
-            border-radius: 10px;
-            border: 1px solid #cbd5e0;
-            font-size: 0.95rem;
-        }
+    .register-redirect {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 1rem;
+        color: var(--text-muted);
+    }
 
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
+    .register-redirect a {
+        color: var(--accent);
+        font-weight: 700;
+        text-decoration: none;
+    }
 
-        .password-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+    .error-box {
+        background: rgba(229, 62, 62, 0.1);
+        color: var(--danger);
+        padding: 12px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-size: 0.95rem;
+        border: 1px solid var(--danger);
+    }
+</style>
+{% endblock %}
 
-        .toggle-btn {
-            padding: 10px 14px;
-            background-color: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-
-        .login-btn {
-            width: 100%;
-            margin-top: 10px;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 14px;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
-            transition: transform 0.2s ease;
-        }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .register-redirect {
-            text-align: center;
-            margin-top: 18px;
-            font-size: 0.9rem;
-        }
-
-        .register-redirect a {
-            color: #667eea;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .error-box {
-            color: red;
-            margin-bottom: 14px;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-    </style>
-</head>
-
-<body>
-
-    <!-- NAVBAR -->
-    <nav class="navbar">
-        <div class="nav-center">
-            <h2>AlignWell</h2>
-            <p>Your smart posture correction partner</p>
-        </div>
-    </nav>
-
-    <!-- LOGIN CARD -->
-    <div class="login-container">
-
-        <div class="login-header">
-            <h2>Welcome Back</h2>
-            <p>Login to continue</p>
-        </div>
-
-        {% if error %}
-        <div class="error-box">{{ error }}</div>
-        {% endif %}
-
-        <form method="post" action="/login">
-
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" name="email" required>
-            </div>
-
-            <div class="form-group">
-                <label>Password</label>
-                <div class="password-row">
-                    <input type="password" id="password" name="password" required>
-                    <button type="button" class="toggle-btn"
-                        onclick="togglePasswordVisibility('password')">Show</button>
-                </div>
-            </div>
-
-            <button class="login-btn" type="submit">Login</button>
-
-        </form>
-
-        <div class="register-redirect">
-            Don’t have an account?
-            <a href="/register">Register</a>
-        </div>
-
+{% block content %}
+<div class="login-container">
+    <div class="login-header">
+        <h2>Welcome Back</h2>
+        <p>Login to your account</p>
     </div>
 
-    <script>
-        function togglePasswordVisibility(fieldId) {
-            const field = document.getElementById(fieldId);
-            const button = event.target;
+    {% if error %}
+    <div class="error-box">{{ error }}</div>
+    {% endif %}
 
-            if (field.type === 'password') {
-                field.type = 'text';
-                button.textContent = 'Hide';
-            } else {
-                field.type = 'password';
-                button.textContent = 'Show';
-            }
+    <form method="post" action="/login">
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" name="email" placeholder="you@example.com" required>
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <div class="password-row">
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+                <button type="button" class="toggle-btn" onclick="togglePasswordVisibility('password')">Show</button>
+            </div>
+        </div>
+
+        <button class="login-btn" type="submit">Login</button>
+    </form>
+
+    <div class="register-redirect">
+        New to AlignWell? <a href="/register">Create an account</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function togglePasswordVisibility(fieldId) {
+        const field = document.getElementById(fieldId);
+        const button = event.target;
+
+        if (field.type === 'password') {
+            field.type = 'text';
+            button.textContent = 'Hide';
+        } else {
+            field.type = 'password';
+            button.textContent = 'Show';
         }
-    </script>
-
-</body>
-
-</html>
+    }
+</script>
+{% endblock %}

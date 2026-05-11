@@ -14,6 +14,7 @@ class PushupTracker:
         #these variables are used to validate a rep properly (to calculate accuracy)
         self.rep_valid = True
         self.stable_frames = 0
+        self.is_calibrated = False
         
         # Filters for smoothing (EMA alpha=0.3)
         self.eb_filter = EMAFilter(alpha=0.3)

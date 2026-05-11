@@ -1,69 +1,39 @@
 {% extends "base.html" %}
 
-{% block title %}Shoulder Raise | AlignWell{% endblock %}
-
-{% block head %}
-
-<style>
-    .container {
-        width: 85%;
-        margin: auto;
-        margin-top: 30px;
-        text-align: center;
-    }
-
-    .image-row {
-        display: flex;
-        justify-content: center;
-        gap: 40px;
-        margin-top: 30px;
-        flex-wrap: wrap;
-    }
-
-    .box {
-        border: 1px solid #ccc;
-        border-radius: 12px;
-        padding: 15px;
-        width: 300px;
-    }
-
-    .box img {
-        width: 100%;
-        border-radius: 10px;
-    }
-
-    button {
-        padding: 10px 20px;
-        margin-top: 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-</style>
-{% endblock %}
+{% block title %}Shoulder Raises | AlignWell{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>Shoulder Raise Guide</h2>
+<div class="guide-container">
+    <h2 class="guide-title">Shoulder Raise Posture Guide</h2>
 
-    <div class="image-row">
-        <div class="box">
+    <div class="guide-row">
+        <div class="guide-box">
             <h4>Correct Posture</h4>
-            <img src="/static/images/shoulderraisescorrect.jpeg">
-            <p>Arms lifted with control</p>
+            <img src="/static/images/shoulderraisescorrect.jpeg" alt="Correct Shoulder Raise">
+            <p>Arms parallel to ground, slow tempo</p>
         </div>
-        <div class="box">
+        <div class="guide-box">
             <h4>Incorrect Posture</h4>
-            <img src="/static/images/shoulderraiseswrong.jpeg">
-            <p>Swinging weights</p>
+            <img src="/static/images/shoulderraiseswrong.jpeg" alt="Wrong Shoulder Raise">
+            <p>Swinging torso, leaning back</p>
         </div>
     </div>
 
-    <h3>Tips</h3>
-    <p>Soft elbows</p>
-    <p>Light weights</p>
-    <p>Controlled motion</p>
+    <div class="tips-card">
+        <h3>Pro Tips for Perfect Form</h3>
+        <ul class="tips-list">
+            <li>Keep shoulders down</li>
+            <li>No momentum swinging</li>
+            <li>Soft bend in elbows</li>
+            <li>Control the descent</li>
+        </ul>
+    </div>
 
-    <button onclick="startShoulderRaise()">Start Webcam</button>
+    <div class="guide-action">
+        <button class="btn btn-primary" onclick="startShoulderRaise()" style="padding: 16px 40px; font-size: 1.1rem;">
+            Start Shoulder Raise Session
+        </button>
+    </div>
 </div>
 {% endblock %}
 

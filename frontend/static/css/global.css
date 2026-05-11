@@ -1,0 +1,272 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    color: var(--text-main);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.navbar {
+    background: var(--nav-bg);
+    color: var(--nav-text);
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar .brand {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.navbar .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.navbar a {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.navbar a:hover {
+    opacity: 0.8;
+}
+
+.theme-dots {
+    display: flex;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.theme-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.theme-dot:hover {
+    transform: scale(1.2);
+}
+
+.theme-dot.active {
+    border-color: #fff;
+    box-shadow: 0 0 0 2px var(--accent);
+    transform: scale(1.1);
+}
+
+.dot-theme-light {
+    background: #f0f2f5;
+}
+
+.dot-theme-dark {
+    background: #1a1a1a;
+}
+
+.dot-theme-saturated {
+    background: #667eea;
+}
+
+.dot-theme-animated {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+}
+
+.theme-switcher {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: inherit;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.theme-switcher option {
+    background: #222;
+    color: white;
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+.success {
+    color: var(--success);
+}
+
+.danger {
+    color: var(--danger);
+}
+
+.warning {
+    color: var(--warning);
+}
+
+/* GUIDE PAGES LAYOUT */
+.guide-container {
+    max-width: 900px;
+    margin: 40px auto;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.guide-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 40px;
+    background: var(--nav-bg);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.guide-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 60px;
+    flex-wrap: wrap;
+}
+
+.guide-box {
+    flex: 1;
+    min-width: 300px;
+    max-width: 400px;
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: transform 0.3s ease;
+}
+
+.guide-box:hover {
+    transform: translateY(-5px);
+}
+
+.guide-box h4 {
+    font-size: 1.25rem;
+    margin-bottom: 16px;
+    color: var(--accent);
+}
+
+.guide-box img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+}
+
+.guide-box p {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.tips-card {
+    background: var(--bg-gradient);
+    padding: 40px;
+    border-radius: 24px;
+    margin: 40px 0;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+}
+
+.tips-card::before {
+    content: "TIPS";
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    font-size: 5rem;
+    font-weight: 900;
+    opacity: 0.05;
+    color: var(--text-main);
+    pointer-events: none;
+}
+
+.tips-card h3 {
+    font-size: 1.8rem;
+    margin-bottom: 24px;
+    color: var(--text-main);
+}
+
+.tips-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    text-align: left;
+}
+
+.tips-list li {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tips-list li::before {
+    content: "✓";
+    color: var(--success);
+    font-weight: 900;
+}
+
+.guide-action {
+    margin-top: 40px;
+}

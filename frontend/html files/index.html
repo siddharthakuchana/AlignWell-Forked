@@ -1,154 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>AlignWell</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block title %}AlignWell | Smart Posture Correction{% endblock %}
 
-    <style>
-        /* RESET */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        }
+{% block head %}
+<style>
+    /* MAIN HERO */
+    .main-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 80px 20px;
+        min-height: 70vh;
+    }
 
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fb 0%, #eef1f7 100%);
-            color: #2d3748;
-            display: flex;
-            flex-direction: column;
-        }
+    .main-container h1 {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 24px;
+        color: var(--text-main);
+        letter-spacing: -1px;
+    }
 
-        /* NAVBAR */
-        .navbar {
-            background: #222;
-            color: white;
-            padding: 18px 28px;
-            display: flex;
-            justify-content: center;
-            /* ⬅ horizontal center */
-            align-items: center;
-            /* ⬅ vertical center */
-        }
+    .main-container p {
+        font-size: 1.4rem;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin-bottom: 48px;
+        line-height: 1.6;
+    }
 
+    /* CTA BUTTON */
+    .cta-btn {
+        background: var(--accent);
+        color: white;
+        padding: 18px 48px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 16px;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        text-decoration: none;
+        display: inline-block;
+    }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            flex-direction: column;
-        }
+    .cta-btn:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        background: var(--accent-hover);
+    }
 
-        .brand h2 {
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            line-height: 1.2;
-        }
+    /* FOOTER NOTE */
+    .footer-note {
+        margin-top: 60px;
+        font-size: 1rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
 
-        .brand p {
-            font-size: 0.9rem;
-            color: #a0aec0;
-            margin-top: 2px;
-        }
-
-        /* MAIN HERO */
-        .main-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 40px 20px;
-        }
-
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
         .main-container h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            margin-bottom: 12px;
-            color: #1a202c;
+            font-size: 2.5rem;
         }
 
         .main-container p {
-            font-size: 1.25rem;
-            color: #4a5568;
-            max-width: 520px;
-            margin-bottom: 36px;
-        }
-
-        /* CTA BUTTON */
-        .cta-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 14px 36px;
             font-size: 1.1rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 14px;
-            cursor: pointer;
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.35);
-            transition: all 0.25s ease;
         }
+    }
+</style>
+{% endblock %}
 
-        .cta-btn:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.45);
-        }
+{% block content %}
+<!-- HERO -->
+<div class="main-container">
+    <h1 class="pulse">Align Your Future</h1>
+    <p>
+        Master your form with real-time AI tracking. The smartest way to train, right in your browser.
+    </p>
 
-        .cta-btn a {
-            color: white;
-            text-decoration: none;
-        }
+    <a href="/login" class="cta-btn">
+        Start Training Now
+    </a>
 
-        /* FOOTER NOTE */
-        .footer-note {
-            margin-top: 40px;
-            font-size: 0.9rem;
-            color: #718096;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 600px) {
-            .main-container h1 {
-                font-size: 2.2rem;
-            }
-
-            .main-container p {
-                font-size: 1.1rem;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <!-- NAVBAR -->
-    <nav class="navbar">
-        <div class="brand">
-            <h2>AlignWell</h2>
-            <p>Your smart posture correction partner</p>
-        </div>
-    </nav>
-
-    <!-- HERO -->
-    <div class="main-container">
-        <h1>Welcome to AlignWell</h1>
-        <p>
-            Improve your gym posture with real-time AI feedback and smarter movement tracking.
-        </p>
-
-        <button class="cta-btn">
-            <a href="/login">Get Started</a>
-        </button>
-
-        <div class="footer-note">
-            Train smart • Move right • Stay injury-free
-        </div>
+    <div class="footer-note">
+        AI-Powered • Real-Time Feedback • Injury Prevention
     </div>
-
-</body>
-
-</html>
+</div>
+{% endblock %}
