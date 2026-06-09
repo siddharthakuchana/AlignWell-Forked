@@ -1,85 +1,73 @@
-# 🏋️‍♂️ AlignWell – AI-Based Exercise Posture Correction & Fitness Game
+# AlignWell – AI-Powered Exercise Posture Correction System
 
-## 🚀 Overview
-**AlignWell** is an intelligent fitness application that combines **computer vision**, **real-time posture correction**, and **gamification** to enhance workout quality and user engagement.  
-It analyzes body movements, provides feedback on exercise posture, and integrates an interactive game to make workouts fun and effective.
+## Overview
+AlignWell is an AI-powered fitness application designed to improve exercise performance through real-time posture analysis and corrective feedback. Using computer vision and pose detection technology, the system helps users maintain proper form during workouts, reducing the risk of injury and improving training effectiveness. The platform also incorporates gamification features to enhance user engagement and workout consistency.
 
----
+## Key Features
 
-## 🎯 Features
+### AI-Based Posture Analysis
+- Real-time exercise posture detection using computer vision
+- Joint-angle analysis for movement accuracy
+- Instant feedback to help users maintain correct form
 
-### 🧠 AI Posture Detection
-- Real-time posture analysis using computer vision
-- Joint angle calculation for accurate feedback
-- Helps users perform exercises safely and correctly
+### Interactive Fitness Experience
+- Gamified workout environment to enhance motivation
+- Performance-based engagement and progress tracking
+- Interactive challenges to encourage workout consistency
 
-### 🎮 Gamified Experience
-- Interactive JavaScript-based game module
-- Encourages consistency and motivation
-- Makes workouts engaging and less monotonous
+### Scalable Backend Architecture
+- Developed using FastAPI for high-performance API handling
+- Seamless communication between frontend and backend
+- Modular and maintainable application design
 
-### 📊 Backend Integration
-- FastAPI-powered backend for handling logic
-- API-based communication between frontend and backend
-- Scalable and modular architecture
+### Data Management
+- Integration with TiDB cloud database
+- Secure storage of user profiles and workout data
+- Performance tracking and analytics
 
-### 🗄️ Database Support
-- Cloud database (TiDB) integration
-- Stores user data, performance, and progress
-- Secure and structured data handling
+### User Interface
+- Responsive and intuitive web interface
+- Built using HTML, CSS, and JavaScript
+- Real-time interaction and feedback display
 
-### 🌐 Frontend Interface
-- Clean and responsive UI
-- Dynamic HTML, CSS, and JavaScript
-- Real-time interaction with backend APIs
+## Technology Stack
 
----
+- Frontend: HTML, CSS, JavaScript
+- Backend: FastAPI (Python)
+- Database: TiDB
+- AI/ML: Computer Vision, Pose Detection
+- Version Control: Git, GitHub
 
-## 🛠️ Tech Stack
-
-Frontend: HTML, CSS, JavaScript  
-Backend: FastAPI (Python)  
-Database: TiDB (MySQL compatible)  
-AI/ML: Computer Vision (Pose Detection)  
-Version Control: Git & GitHub  
-
----
-
-## 📂 Project Structure
+## Project Structure
 
 AlignWell/
-│
 ├── backend/
 ├── frontend/
 └── README.md
 
----
+## Installation & Setup
 
-## ⚙️ Setup Instructions
+1. Clone the repository:
+   git clone https://github.com/Prithvi-Siddharth/alignwell.git
 
-1. Clone repo  
-git clone https://github.com/Prithvi-Siddharth/alignwell.git  
+2. Navigate to the backend directory:
+   cd backend
 
-2. Go to backend  
-cd backend  
+3. Install dependencies:
+   pip install -r requirements.txt
 
-3. Install dependencies  
-pip install -r requirements.txt  
+4. Run the development server:
+   uvicorn main:app --reload
 
-4. Run server  
-uvicorn main:app --reload  
+5. Open in your browser:
+   http://127.0.0.1:8000
 
-5. Open  
-http://127.0.0.1:8000  
+## Contributors
 
----
-
-## 👨‍💻 Contributors
 - Prithvi M
 - Siddhartha Kuchana
 - Siddharth G
 
----
+## Project Impact
 
-## ⭐ If you like this project
-Give it a ⭐ on GitHub!
+AlignWell combines artificial intelligence, computer vision, and modern web technologies to create a smart fitness solution that promotes safe exercise practices and improves user engagement through interactive fitness experiences.
