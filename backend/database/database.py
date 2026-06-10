@@ -11,7 +11,7 @@ USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 HOST = os.getenv("HOST")
 PORT = os.getenv("PORT")
-DATABASE = os.getenv("DATABASE")
+DATABASE = f"{os.getenv('DB_PORT')}/"
 
 # Debug
 print("DB USER:", USERNAME)
